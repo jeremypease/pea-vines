@@ -82,7 +82,7 @@ def chat_send():
     db.session.add(msg)
     db.session.commit()
 
-    from ..routes import _notify_chat_members
+    from ..routes.chat import _notify_chat_members
     _notify_chat_members(msg)
 
     return jsonify({'message': _serialize(msg, user)}), 201
