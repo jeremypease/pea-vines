@@ -162,8 +162,16 @@ def _send_apns(token, title, body, url):
                 headers=headers,
                 timeout=10,
             )
-        if resp.status_code == 410:
-            # Apple says this token is dead (app uninstalled / unregistered).
+        is_bad_token = False
+        if resp.status_code == 400:
+            try:
+                is_bad_token = resp.json().get('reason') == 'BadDeviceToken'
+            except ValueError as e:
+                _report_push_error(e)
+        if resp.status_code == 410 or is_bad_token:
+            # Apple says this token is dead: either unregistered (410) or
+            # permanently invalid, e.g. sandbox/production mismatch (400
+            # BadDeviceToken). Either way, stop sending to it.
             from .models import UserDevice
             UserDevice.query.filter_by(token=token).delete()
             db.session.commit()
