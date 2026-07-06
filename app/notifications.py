@@ -166,8 +166,8 @@ def _send_apns(token, title, body, url):
         if resp.status_code == 400:
             try:
                 is_bad_token = resp.json().get('reason') == 'BadDeviceToken'
-            except ValueError:
-                pass
+            except ValueError as e:
+                _report_push_error(e)
         if resp.status_code == 410 or is_bad_token:
             # Apple says this token is dead: either unregistered (410) or
             # permanently invalid, e.g. sandbox/production mismatch (400
