@@ -68,16 +68,15 @@
 {% endif %}
 
 {% if not upcoming and not past %}
-<div style="max-width:440px;text-align:center;padding:64px 24px;">
-    <i data-lucide="calendar" style="width:48px;height:48px;color:var(--sprout);margin-bottom:16px;"></i>
-    <div style="font-weight:600;font-size:16px;margin-bottom:6px;">No events yet</div>
-    <div style="color:var(--slate);font-size:14px;margin-bottom:20px;">Plan a reunion, holiday gathering, or any get-together.</div>
-    {% if current_user.active_is_admin %}
-    <a href="/events/add" class="btn btn-primary"><i data-lucide="plus"></i> Create first event</a>
-    {% else %}
-    <div style="color:var(--slate-soft);font-size:13px;">Your family hasn't added any events yet — check back soon.</div>
-    {% endif %}
-</div>
+{% from "_macros.html" import empty_state %}
+{% if current_user.active_is_admin %}
+{{ empty_state('calendar', 'No gatherings yet',
+   'Plan your first family gathering — a reunion, a birthday, even a Sunday dinner.',
+   '/events/add', 'Create an event') }}
+{% else %}
+{{ empty_state('calendar', 'No gatherings yet',
+   "Your family hasn't planned anything yet — check back soon.") }}
+{% endif %}
 {% endif %}
 
 {% if upcoming %}

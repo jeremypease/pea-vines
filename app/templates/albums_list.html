@@ -169,6 +169,17 @@
 </div>
 {% endif %}
 
+{% if not albums %}
+{% from "_macros.html" import empty_state %}
+{% if (current_user.active_is_admin or current_user.active_is_delegate) and has_paid_access %}
+{{ empty_state('image', 'No photos yet',
+   'Start your family album — add a few favorites so everyone can enjoy them.',
+   action_label='New album', action_modal='new-album-modal') }}
+{% else %}
+{{ empty_state('image', 'No photos yet', 'Photos your family shares will appear here.') }}
+{% endif %}
+{% endif %}
+
 {% if current_user.active_is_admin or current_user.active_is_delegate %}
 <div id="new-album-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px;">
     <div class="card" style="width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
