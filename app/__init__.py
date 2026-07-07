@@ -270,6 +270,8 @@ def create_app(test_config=None):
             'chat_paid': chat_paid,
             'unread_chat_count': unread_chat,
             'feature_enabled': lambda key: key in app.config.get('ENABLED_FEATURES', set()),
+            'a11y_text_size': (current_user.text_size if current_user.is_authenticated else 'normal'),
+            'a11y_high_contrast': (current_user.high_contrast if current_user.is_authenticated else False),
         }
 
     @app.template_filter('datetime_format')
