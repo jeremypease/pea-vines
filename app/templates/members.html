@@ -67,6 +67,13 @@
 
 </div>
 
+{% if people|length <= 1 and (current_user.active_is_admin or current_user.active_is_delegate) %}
+{% from "_macros.html" import empty_state %}
+{{ empty_state('user-plus', "It's just you so far",
+   'Add your family so your tree can start to grow — you can invite them to join whenever you like.',
+   '/admin/add-member', 'Add a family member', 'user-plus') }}
+{% endif %}
+
 <!-- Grid -->
 <div id="member-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:16px;">
     {% for person in people %}

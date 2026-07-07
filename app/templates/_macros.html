@@ -12,3 +12,28 @@
 <div class="av av-{{ size }}" style="background:{{ color }};background-image:url('{{ placeholder }}');background-size:90%;background-position:center bottom;"></div>
 {% endif %}
 {% endmacro %}
+
+
+{# Reusable empty / first-run state — one warm, guided prompt with a single
+   clear action. Jeffrey: style .empty-state* in CSS; the inline styles below
+   are functional fallbacks that reuse existing tokens so it renders now. #}
+{% macro empty_state(icon, title, message, action_url=None, action_label=None, action_icon='plus', action_modal=None) %}
+<div class="empty-state" style="text-align:center;padding:48px 24px;max-width:420px;margin:0 auto;">
+    <div class="empty-state-icon" style="width:56px;height:56px;border-radius:50%;background:var(--leaf-mist);display:inline-flex;align-items:center;justify-content:center;">
+        <i data-lucide="{{ icon }}" style="width:26px;height:26px;color:var(--vine);"></i>
+    </div>
+    <div class="empty-state-title" style="font-weight:600;font-size:17px;margin-top:16px;">{{ title }}</div>
+    <div class="empty-state-message" style="color:var(--slate);font-size:14px;line-height:1.5;margin-top:6px;">{{ message }}</div>
+    {% if action_label and (action_url or action_modal) %}
+    {% if action_modal %}
+    <button class="btn btn-primary" data-open-modal="{{ action_modal }}" style="margin-top:18px;display:inline-flex;align-items:center;gap:6px;">
+        {% if action_icon %}<i data-lucide="{{ action_icon }}"></i>{% endif %}{{ action_label }}
+    </button>
+    {% else %}
+    <a href="{{ action_url }}" class="btn btn-primary" style="margin-top:18px;display:inline-flex;align-items:center;gap:6px;">
+        {% if action_icon %}<i data-lucide="{{ action_icon }}"></i>{% endif %}{{ action_label }}
+    </a>
+    {% endif %}
+    {% endif %}
+</div>
+{% endmacro %}
