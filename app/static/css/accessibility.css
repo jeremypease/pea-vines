@@ -1,0 +1,26 @@
+/* Accessibility layer — driven by <html data-text-size> / data-contrast, set
+   from the user's saved preference (Profile → Display & Accessibility).
+
+   This is a functional starter kept OUT of swugl.css so it's self-contained.
+   Jeffrey: own the final visual tuning on `design` (e.g. a rem-based scale
+   instead of zoom, and contrast tokens matched to the palette). */
+
+/* ── Larger text ──────────────────────────────────────────────────────────
+   zoom scales the whole UI, so it works even with the app's many inline px
+   font sizes. A rem-based approach can replace this later. */
+html[data-text-size="large"] body    { zoom: 1.15; }
+html[data-text-size="x-large"] body   { zoom: 1.30; }
+
+/* ── Higher contrast ──────────────────────────────────────────────────────
+   These custom properties are used throughout the app, so overriding them
+   here darkens muted text and strengthens hairlines everywhere at once. */
+html[data-contrast="high"] {
+    --slate:           #2a2a2a;
+    --slate-soft:      #3d3d3d;
+    --ink:             #000000;
+    --ink-soft:        #111111;
+    --hairline:        #9a9a9a;
+    --hairline-strong: #6f6f6f;
+}
+html[data-contrast="high"] a:not(.btn) { text-decoration: underline; }
+html[data-contrast="high"] .btn { border-width: 2px; }

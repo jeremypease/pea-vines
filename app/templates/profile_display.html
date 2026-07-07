@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Display &amp; Accessibility — Swugl{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">My Profile</div>
+        <h1>Display &amp; Accessibility</h1>
+    </div>
+    <a href="/profile" class="btn btn-secondary"><i data-lucide="arrow-left"></i> Back</a>
+</div>
+
+<div style="max-width:560px;">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="card" style="margin-bottom:18px;">
+            <h3 style="font-size:16px;margin-bottom:4px;">Text size</h3>
+            <p style="font-size:14px;color:var(--slate);margin-bottom:16px;">Make everything a little easier to read.</p>
+            {% for val, label, hint, sz in [
+                ('normal', 'Normal', 'Default size', '15px'),
+                ('large',  'Large',  'A bit bigger', '18px'),
+                ('x-large','Larger', 'Biggest — easiest to read', '21px')] %}
+            <label style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid {{ 'var(--vine)' if current_user.text_size == val else 'var(--hairline-strong)' }};border-radius:12px;margin-bottom:10px;cursor:pointer;">
+                <input type="radio" name="text_size" value="{{ val }}" {% if current_user.text_size == val %}checked{% endif %} style="width:20px;height:20px;flex-shrink:0;">
+                <span>
+                    <span style="font-weight:600;font-size:{{ sz }};">{{ label }}</span>
+                    <span style="display:block;font-size:13px;color:var(--slate);">{{ hint }}</span>
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="card" style="margin-bottom:18px;">
+            <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+                <input type="checkbox" name="high_contrast" {% if current_user.high_contrast %}checked{% endif %} style="width:20px;height:20px;flex-shrink:0;margin-top:2px;">
+                <span>
+                    <span style="font-weight:600;font-size:16px;">Higher contrast</span>
+                    <span style="display:block;font-size:14px;color:var(--slate);margin-top:2px;">Darker text and stronger lines for easier reading.</span>
+                </span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="font-size:16px;padding:12px 24px;">Save settings</button>
+    </form>
+    <p style="font-size:13px;color:var(--slate);margin-top:16px;">These settings apply to your account on every device you sign in on.</p>
+</div>
+{% endblock %}
