@@ -193,7 +193,7 @@ details[open] .details-chevron { transform: rotate(180deg); }
             <form method="POST" action="/events/{{ event.id }}/delete">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-secondary" style="color:var(--tomato);"
-                        data-confirm="Delete {{ event.name }}? This cannot be undone.">
+                        data-confirm="Delete {{ event.name }}? This can't be undone.">
                     <i data-lucide="trash-2"></i>
                 </button>
             </form>

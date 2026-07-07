@@ -27,7 +27,7 @@
         <form method="POST" action="/albums/{{ album.id }}/delete">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--tomato);"
-                    data-confirm="Delete this entire album and all its photos?">
+                    data-confirm="Delete this album and all its photos? This can't be undone.">
                 <i data-lucide="trash-2"></i> Delete album
             </button>
         </form>

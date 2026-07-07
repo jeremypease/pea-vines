@@ -310,7 +310,7 @@ def event_add():
             if key:
                 event.cover_image_path = key
         db.session.commit()
-        flash(f'{event.name} has been created.', 'info')
+        flash(f'{event.name} is on the calendar!', 'info')
         from ..notifications import notify
         recipients = User.query.filter_by(
             family_id=current_user.active_family_id, status='approved'
@@ -603,7 +603,7 @@ def event_edit(event_id):
                 url=url_for('main.event_detail', event_id=event.id, _external=True),
                 exclude_user_id=current_user.id,
             )
-        flash('Event updated.', 'info')
+        flash('Event updated — your family will see the changes.', 'info')
         return redirect(url_for('main.event_detail', event_id=event.id))
     # Pre-populate location_id from the event for the edit form
     if not form.location_id.data and event.location_id:
@@ -819,7 +819,7 @@ def event_delete(event_id):
         return redirect(url_for('main.events_list'))
     db.session.delete(event)
     db.session.commit()
-    flash(f'{event.name} has been deleted.', 'info')
+    flash(f'{event.name} was removed from the calendar.', 'info')
     return redirect(url_for('main.events_list'))
 
 
@@ -1557,7 +1557,7 @@ def event_assignment_claim(event_id, aid):
         return redirect(url_for('main.event_detail', event_id=event_id))
     a.claimed_by_id = current_user.person.id
     db.session.commit()
-    flash(f'You claimed "{a.title}".', 'info')
+    flash(f'Thanks for grabbing "{a.title}"!', 'info')
     return redirect(url_for('main.event_detail', event_id=event_id))
 
 
