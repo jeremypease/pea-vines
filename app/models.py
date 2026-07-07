@@ -297,6 +297,9 @@ class User(UserMixin, db.Model):
     totp_enabled = db.Column(db.Boolean, nullable=False, server_default='0')
     chat_last_seen_at = db.Column(db.DateTime, nullable=True)
     home_last_seen_at = db.Column(db.DateTime, nullable=True)
+    # Display / accessibility preferences (per-user, so they follow the person)
+    text_size = db.Column(db.String(10), nullable=False, default='normal', server_default='normal')   # normal | large | x-large
+    high_contrast = db.Column(db.Boolean, nullable=False, default=False, server_default='false')
     passkeys = db.relationship('UserCredential', backref='user', cascade='all, delete-orphan')
 
     # Multi-pod memberships

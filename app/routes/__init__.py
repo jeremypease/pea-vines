@@ -2017,6 +2017,21 @@ def notifications_read_all():
     return redirect(url_for('main.notifications'))
 
 
+@main.route('/profile/display', methods=['GET', 'POST'])
+@login_required
+def profile_display():
+    """Per-user display & accessibility preferences — larger text, higher
+    contrast — so older family members can read comfortably."""
+    if request.method == 'POST':
+        size = request.form.get('text_size', 'normal')
+        current_user.text_size = size if size in ('normal', 'large', 'x-large') else 'normal'
+        current_user.high_contrast = bool(request.form.get('high_contrast'))
+        db.session.commit()
+        flash('Your display settings are saved.', 'info')
+        return redirect(url_for('main.profile_display'))
+    return render_template('profile_display.html')
+
+
 @main.route('/profile/notifications', methods=['GET', 'POST'])
 @login_required
 def profile_notifications():
