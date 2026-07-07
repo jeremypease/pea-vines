@@ -26,10 +26,9 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="card" style="text-align:center;padding:48px 24px;color:var(--slate);">
-        <i data-lucide="rss" style="width:32px;height:32px;color:var(--slate-soft);"></i>
-        <p style="margin-top:12px;">No activity yet. Post an announcement, add a photo, or create an event to get things rolling.</p>
-    </div>
+    {% from "_macros.html" import empty_state %}
+    {{ empty_state('rss', 'Nothing here yet',
+       "As your family creates events and adds photos, the highlights will show up here.") }}
     {% endif %}
 </div>
 {% endblock %}
