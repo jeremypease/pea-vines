@@ -533,7 +533,7 @@ def login():
             flash('This account has been removed. Contact your family admin.', 'error')
             return redirect(url_for('main.login'))
         if user.status != 'approved':
-            flash('Your account is pending approval.', 'error')
+            flash("Your account is waiting for an admin's approval — hang tight.", 'error')
             return redirect(url_for('main.login'))
         if user.has_2fa:
             session['pending_2fa_user_id'] = user.id
@@ -589,7 +589,7 @@ def register():
             return render_template('register.html', form=form)
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
-            flash('An account with that email already exists.', 'error')
+            flash("There's already an account with that email — try signing in instead.", 'error')
             return redirect(url_for('main.register'))
         account_id = 'pod_' + secrets.token_urlsafe(6)
         family = Family(name=form.family_name.data, account_id=account_id,
@@ -628,12 +628,12 @@ def register():
         db.session.commit()
         if current_app.config.get('MAIL_ENABLED'):
             send_verification_email(user, url_for('main.verify_email', token=token, _external=True))
-            flash('Registration successful! Please check your email to verify your account.', 'info')
+            flash("You're in! Check your email for a link to verify your account.", 'info')
         else:
             user.email_verified = True
             family.trial_ends_at = datetime.utcnow() + timedelta(days=30)
             db.session.commit()
-            flash('Registration successful! You can now sign in.', 'info')
+            flash("You're all set — sign in to get started.", 'info')
         return redirect(url_for('main.login'))
     return render_template('register.html', form=form)
 
@@ -654,7 +654,7 @@ def verify_email(token):
     # Send Day 0 welcome email for new pod admins (families with an account_id)
     if current_app.config.get('MAIL_ENABLED') and user.is_admin and user.family and user.family.account_id:
         send_welcome_email(user, user.family, url_for('main.home', _external=True))
-    flash('Email verified! You can now sign in.', 'info')
+    flash("Email verified — welcome! You can sign in now.", 'info')
     return redirect(url_for('main.login'))
 
 @main.route('/resend-verification', methods=['GET', 'POST'])
@@ -728,9 +728,9 @@ def register_invited(token):
         if finalize_invited_activation(invited_user) == 'pending':
             if current_app.config.get('MAIL_ENABLED'):
                 send_pending_notification(invited_user)
-            flash('Account created! An admin will review and approve your access shortly.', 'info')
+            flash("Welcome! An admin will approve your access shortly.", 'info')
         else:
-            flash('Account created! You can now log in.', 'info')
+            flash("Welcome to the family! You can sign in now.", 'info')
         return redirect(url_for('main.login'))
 
     return render_template('register.html', form=form, invited=True, oauth_invite_token=token)
@@ -809,7 +809,7 @@ def add_member():
         if parent2 and request.form.get('include_parent2'):
             db.session.add(ParentRelationship(parent_id=parent2.id, child_id=person.id, role=_default_parent_role(parent2)))
         db.session.commit()
-        flash(f'{person.name} has been added to the family.', 'info')
+        flash(f'{person.name} is now part of the family.', 'info')
         # One-step invite: if requested and we have an email, send the invitation
         # now instead of making the admin open the profile and click Invite.
         if request.form.get('invite_now') and person.email and not person.deathday:
@@ -836,7 +836,7 @@ def add_parent(person_id):
         return redirect(url_for('main.home'))
     can_edit = current_user.active_is_admin or (person.user and person.user == current_user)
     if not can_edit:
-        flash('You do not have permission to edit this profile.', 'error')
+        flash("You don't have permission to edit this profile.", 'error')
         return redirect(url_for('main.person_detail', person_id=person_id))
     existing_parent_ids = {p.id for p in person.parents}
     eligible = [
@@ -865,7 +865,7 @@ def add_child(person_id):
         return redirect(url_for('main.home'))
     can_edit = current_user.active_is_admin or (person.user and person.user == current_user)
     if not can_edit:
-        flash('You do not have permission to edit this profile.', 'error')
+        flash("You don't have permission to edit this profile.", 'error')
         return redirect(url_for('main.person_detail', person_id=person_id))
     existing_child_ids = {c.id for c in person.children}
     eligible = [
@@ -895,7 +895,7 @@ def remove_parent(person_id, parent_id):
         return redirect(url_for('main.home'))
     can_edit = current_user.active_is_admin or (person.user and person.user == current_user)
     if not can_edit:
-        flash('You do not have permission to edit this profile.', 'error')
+        flash("You don't have permission to edit this profile.", 'error')
         return redirect(url_for('main.person_detail', person_id=person_id))
     parent_person = db.session.get(Person, parent_id)
     if parent_person and parent_person.family_id == current_user.active_family_id:
@@ -956,7 +956,7 @@ def remove_child(person_id, child_id):
         return redirect(url_for('main.home'))
     can_edit = current_user.active_is_admin or (person.user and person.user == current_user)
     if not can_edit:
-        flash('You do not have permission to edit this profile.', 'error')
+        flash("You don't have permission to edit this profile.", 'error')
         return redirect(url_for('main.person_detail', person_id=person_id))
     child_person = db.session.get(Person, child_id)
     if child_person and child_person.family_id == current_user.active_family_id:
@@ -1031,7 +1031,7 @@ def reset_password(token):
         user.reset_token = None
         user.reset_token_expiry = None
         db.session.commit()
-        flash('Password reset successfully. You can now sign in.', 'info')
+        flash("Your password is updated — sign in with your new one.", 'info')
         return redirect(url_for('main.login'))
     return render_template('reset_password.html', form=form)
 
@@ -1552,7 +1552,7 @@ def approve_user(user_id):
     _notify_new_member(user)
     if current_app.config.get('MAIL_ENABLED'):
         send_approval_notification(user, url_for('main.login', _external=True))
-    flash(f'{user.get_full_name()} has been approved.', 'info')
+    flash(f'{user.get_full_name()} is approved — welcome them in!', 'info')
     return redirect(url_for('main.admin_users'))
 
 @main.route('/admin/reject/<int:user_id>', methods=['POST'])
@@ -1598,7 +1598,7 @@ def remove_user(user_id):
         flash('User not found.', 'error')
         return redirect(url_for('main.admin_users'))
     if user.id == current_user.id:
-        flash('You cannot remove your own account.', 'error')
+        flash("You can't remove your own account.", 'error')
         return redirect(url_for('main.admin_users'))
     if user.is_admin:
         admin_count = User.query.filter_by(
@@ -1948,7 +1948,7 @@ def profile_edit():
         person.notes = form.notes.data or None
         person.email = current_user.email
         db.session.commit()
-        flash('Profile updated successfully!', 'info')
+        flash('Your profile is saved.', 'info')
         return redirect(url_for('main.profile'))
     return render_template('profile_edit.html', form=form, person=person)
 
@@ -2074,7 +2074,7 @@ def person_edit(person_id):
         return redirect(url_for('main.home'))
     can_edit = current_user.active_is_admin or (person.user and person.user == current_user)
     if not can_edit:
-        flash('You do not have permission to edit this profile.', 'error')
+        flash("You don't have permission to edit this profile.", 'error')
         return redirect(url_for('main.person_detail', person_id=person_id))
     lgbtq = current_user.active_family.has_lgbtq_options
     form = EditPersonForm(obj=person)
@@ -2259,7 +2259,7 @@ def spouse_invite():
     if invite_form.validate_on_submit():
         existing = User.query.filter_by(email=invite_form.email.data).first()
         if existing:
-            flash('An account with that email already exists.', 'error')
+            flash("There's already an account with that email — try signing in instead.", 'error')
             return redirect(url_for('main.spouse_add'))
         full_name = f"{invite_form.first_name.data} {invite_form.last_name.data}"
         spouse_person = Person.query.filter_by(name=full_name, family_id=current_user.active_family_id).first()
