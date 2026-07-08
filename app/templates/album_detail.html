@@ -65,8 +65,7 @@
 </div>
 {% endif %}
 
-<!-- Upload form (contributors and admins only) -->
-{% if current_user.active_is_admin or current_user.active_is_delegate %}
+<!-- Upload form — any family member can add photos to an album -->
 <div class="card" style="max-width:600px;margin-bottom:24px;">
     <div class="card-header"><h3>Upload photos</h3></div>
     <form method="POST" action="/albums/{{ album.id }}/upload" enctype="multipart/form-data">
@@ -87,7 +86,6 @@
         </button>
     </form>
 </div>
-{% endif %}
 
 <!-- Photo grid -->
 {% if album.photos %}
