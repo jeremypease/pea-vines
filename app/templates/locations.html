@@ -170,7 +170,7 @@
                 </div>
 
                 <form method="POST" action="{{ url_for('main.location_delete', loc_id=loc.id) }}" style="margin-top:14px;"
-                      onsubmit="return confirm('Delete {{ loc.name | e }}? Events using it will keep their address text.');">
+                      data-confirm="Delete {{ loc.name | e }}? Events using it will keep their address text.">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--tomato);">
                         <i data-lucide="trash-2" style="width:13px;height:13px;vertical-align:-2px;"></i> Delete

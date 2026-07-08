@@ -19,11 +19,12 @@ def _member(app, email='rolemember@pease-family.com'):
     return u.id
 
 
-def test_csp_allows_inline_event_handlers(app, client):
-    # The role dropdown (and 38 other inline handlers) rely on script-src-attr.
+def test_csp_is_pure_nonce_no_inline_allowance(app, client):
+    # The role dropdown auto-submits via data-autosubmit (delegated listener),
+    # so the CSP needs no inline-handler allowance — it stays pure-nonce.
     csp = client.get('/login').headers.get('Content-Security-Policy', '')
-    assert "script-src-attr 'unsafe-inline'" in csp
-    assert "'nonce-" in csp   # real <script> tags still require the nonce
+    assert "'nonce-" in csp
+    assert "script-src-attr 'unsafe-inline'" not in csp
 
 
 def test_set_role_cycles_member_contributor_admin(app, auth_client):

@@ -63,7 +63,7 @@
                     <button type="submit" class="btn btn-secondary btn-sm">Publish</button>
                 </form>
                 <form method="POST" action="{{ url_for('platform.version_delete', version_id=v.id) }}"
-                      onsubmit="return confirm('Delete version {{ v.version }}?')">
+                      data-confirm="Delete version {{ v.version }}?">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--tomato);">Delete</button>
                 </form>

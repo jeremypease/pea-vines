@@ -47,8 +47,11 @@
 <body>
     <div class="toolbar no-print">
         <a href="{{ url_for('main.event_detail', event_id=event.id) }}" class="btn">← Back to event</a>
-        <button class="btn btn-primary" onclick="window.print()">Print</button>
+        <button class="btn btn-primary" id="print-btn">Print</button>
     </div>
+    <script nonce="{{ g.csp_nonce }}">
+        document.getElementById('print-btn').addEventListener('click', function () { window.print(); });
+    </script>
 
     <header class="evt">
         <div>
