@@ -168,14 +168,14 @@
                     {% if person.user.status == 'approved' %}
                     <form method="POST" action="/admin/set-role/{{ person.user.id }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <select name="role" onchange="this.form.submit()" style="font-size:12px;padding:3px 6px;border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:var(--paper);cursor:pointer;">
+                        <select name="role" data-autosubmit style="font-size:12px;padding:3px 6px;border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:var(--paper);cursor:pointer;">
                             <option value="" {% if not person.user.is_admin and not person.user.is_delegate %}selected{% endif %}>Member</option>
                             <option value="contributor" {% if person.user.is_delegate %}selected{% endif %}>Contributor</option>
                             <option value="admin" {% if person.user.is_admin %}selected{% endif %}>Admin</option>
                         </select>
                     </form>
                     <form method="POST" action="/admin/remove/{{ person.user.id }}"
-                          onsubmit="return confirm('Remove {{ person.get_display_name() }}? They will lose access but their history is kept.');">
+                          data-confirm="Remove {{ person.get_display_name() }}? They will lose access but their history is kept.">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--tomato);" title="Remove access">
                             <i data-lucide="user-x" style="width:13px;height:13px;"></i>

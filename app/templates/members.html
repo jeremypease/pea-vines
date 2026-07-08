@@ -30,8 +30,8 @@
     <!-- Row 1: search + sort -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
         <input id="member-search" type="search" placeholder="Search by name…"
-               style="width:220px;border:1px solid var(--hairline-strong);border-radius:var(--r-s);" oninput="applyFilters()">
-        <select id="sort-select" onchange="applyFilters()" style="width:auto;border:1px solid var(--hairline-strong);border-radius:var(--r-s);">
+               style="width:220px;border:1px solid var(--hairline-strong);border-radius:var(--r-s);">
+        <select id="sort-select" style="width:auto;border:1px solid var(--hairline-strong);border-radius:var(--r-s);">
             <option value="az">A – Z</option>
             <option value="za">Z – A</option>
             <option value="youngest">Youngest first</option>
@@ -140,6 +140,9 @@
 </style>
 
 <script nonce="{{ g.csp_nonce }}">
+// Search + sort re-run the filters (converted from inline oninput/onchange).
+document.getElementById('member-search').addEventListener('input', function () { applyFilters(); });
+document.getElementById('sort-select').addEventListener('change', function () { applyFilters(); });
 const cards = Array.from(document.querySelectorAll('.member-card'));
 let activeFilters = { gender: '', status: '', photo: '', upcoming: false };
 let activeInitial = '';
