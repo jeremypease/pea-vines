@@ -98,7 +98,7 @@
             <!-- Cancel subscription -->
             {% if pod.stripe_subscription_id %}
             <form method="POST" action="{{ url_for('platform.cancel_subscription', pod_id=pod.id) }}"
-                  onsubmit="return confirm('Cancel this subscription in Stripe and set plan to free?')">
+                  data-confirm="Cancel this subscription in Stripe and set plan to free?">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-secondary btn-sm" style="color:#dc2626;">Cancel subscription</button>
             </form>
@@ -191,7 +191,7 @@
             This cannot be undone.
         </p>
         <form method="POST" action="{{ url_for('platform.delete_pod', pod_id=pod.id) }}"
-              onsubmit="return confirm('This will permanently delete {{ pod.name }} and all its data. Are you absolutely sure?')">
+              data-confirm="This will permanently delete {{ pod.name }} and all its data. Are you absolutely sure?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <input type="text" name="confirm_name" placeholder="Type circle name to confirm"

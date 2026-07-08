@@ -74,7 +74,7 @@
             <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--vine);cursor:pointer;">
                 <i data-lucide="camera" style="width:12px;height:12px;"></i>
                 {% if person.photo_path %}Change photo{% else %}Add photo{% endif %}
-                <input type="file" name="photo" accept="image/*" style="display:none;" onchange="this.form.submit()">
+                <input type="file" name="photo" accept="image/*" style="display:none;" data-autosubmit>
             </label>
         </form>
         {% endif %}
@@ -194,7 +194,7 @@
             {% if can_edit %}
             <form method="POST" action="/person/{{ person.id }}/set-spouse-role" style="margin:0;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <select name="role" onchange="this.form.submit()" style="font-size:12px;padding:2px 4px;color:var(--slate);border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:transparent;cursor:pointer;">
+                <select name="role" data-autosubmit style="font-size:12px;padding:2px 4px;color:var(--slate);border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:transparent;cursor:pointer;">
                     {% for value, label in spouse_roles %}
                     <option value="{{ value }}" {% if current_spouse_role == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -227,7 +227,7 @@
             {% if can_edit %}
             <form method="POST" action="/person/{{ person.id }}/set-parent-role/{{ pr.parent.id }}" style="margin:0;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <select name="role" onchange="this.form.submit()" style="font-size:12px;padding:2px 4px;color:var(--slate);border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:transparent;cursor:pointer;">
+                <select name="role" data-autosubmit style="font-size:12px;padding:2px 4px;color:var(--slate);border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:transparent;cursor:pointer;">
                     {% for value, label in parent_roles %}
                     <option value="{{ value }}" {% if pr.role == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}

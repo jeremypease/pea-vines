@@ -102,12 +102,12 @@
     {% if editable or deletable %}
     <div class="chat-msg-actions">
         {% if editable %}
-        <button class="btn btn-sm btn-ghost" onclick="startEdit({{ m.id }}, {{ m.body | tojson }})">
+        <button class="btn btn-sm btn-ghost chat-edit-btn" data-msg-id="{{ m.id }}" data-msg-body="{{ m.body | e }}">
             <i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit
         </button>
         {% endif %}
         {% if deletable %}
-        <form method="POST" action="{{ url_for('main.chat_delete', msg_id=m.id) }}" style="display:inline;" onsubmit="return confirm('Delete this message?');">
+        <form method="POST" action="{{ url_for('main.chat_delete', msg_id=m.id) }}" style="display:inline;" data-confirm="Delete this message?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger,#c0392b);">
                 <i data-lucide="trash-2" style="width:13px;height:13px;"></i> Delete
@@ -162,10 +162,10 @@
         var editedLabel = m.edited_at ? '<span class="chat-msg-edited">(edited)</span>' : '';
         var actions = '';
         if (m.can_edit) {
-            actions += '<button class="btn btn-sm btn-ghost" onclick="startEdit(' + m.id + ',' + JSON.stringify(m.body) + ')"><i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit</button>';
+            actions += '<button class="btn btn-sm btn-ghost chat-edit-btn" data-msg-id="' + m.id + '" data-msg-body="' + escHtml(m.body) + '"><i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit</button>';
         }
         if (m.can_delete) {
-            actions += '<form method="POST" action="' + m.delete_url + '" style="display:inline;" onsubmit="return confirm(\'Delete this message?\');">'
+            actions += '<form method="POST" action="' + m.delete_url + '" style="display:inline;" data-confirm="Delete this message?">'
                 + '<input type="hidden" name="csrf_token" value="' + csrfToken() + '">'
                 + '<button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger,#c0392b);"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Delete</button>'
                 + '</form>';
@@ -269,6 +269,13 @@
     // Scroll to bottom on load
     var anchor = document.getElementById('chat-anchor');
     if (anchor) anchor.scrollIntoView({ block: 'end' });
+
+    // Edit buttons (server- or JS-rendered) → startEdit, via delegation so it
+    // also covers messages added by polling (converted from inline onclick).
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('.chat-edit-btn');
+        if (b) startEdit(parseInt(b.dataset.msgId, 10), b.dataset.msgBody);
+    });
 
     // Start polling
     setTimeout(function tick() { poll(); setTimeout(tick, 5000); }, 5000);

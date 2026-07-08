@@ -23,7 +23,7 @@
     <form method="POST" action="{{ url_for('platform.toggle_stripe_mode') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-sm {% if stripe_mode == 'test' %}btn-secondary{% else %}btn-ghost{% endif %}"
-            {% if stripe_mode == 'live' %}onclick="return confirm('Switch to TEST mode? No real charges will occur.')"{% else %}onclick="return confirm('Switch to LIVE mode? Real charges will be active.')"{% endif %}>
+            {% if stripe_mode == 'live' %}data-confirm="Switch to TEST mode? No real charges will occur."{% else %}data-confirm="Switch to LIVE mode? Real charges will be active."{% endif %}>
             Switch to {{ 'live' if stripe_mode == 'test' else 'test' }}
         </button>
     </form>

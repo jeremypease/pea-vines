@@ -12,7 +12,7 @@
         <a href="{{ url_for('main.address_export', format='csv') }}" class="btn btn-secondary">
             <i data-lucide="download"></i> Download CSV
         </a>
-        <button onclick="window.print()" class="btn btn-secondary">
+        <button data-action="print" class="btn btn-secondary">
             <i data-lucide="printer"></i> Print
         </button>
     </div>

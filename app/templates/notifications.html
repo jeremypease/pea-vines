@@ -26,7 +26,7 @@
 
     {% set is_new = not n.is_read or n.id in just_read_ids %}
     {% if n.url %}
-    <a href="{{ n.url }}" onclick="markRead({{ n.id }}, this);"
+    <a href="{{ n.url }}" class="notif-mark-read" data-nid="{{ n.id }}"
     {% else %}
     <div
     {% endif %}
@@ -66,5 +66,8 @@ function markRead(nid, el) {
         body: 'csrf_token=' + encodeURIComponent(csrf),
     });
 }
+document.querySelectorAll('.notif-mark-read').forEach(function (a) {
+    a.addEventListener('click', function () { markRead(parseInt(a.dataset.nid, 10), a); });
+});
 </script>
 {% endblock %}

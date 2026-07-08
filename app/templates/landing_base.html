@@ -37,8 +37,8 @@
 </header>
 
 <div class="l-nav-mobile" id="navMobile">
-    <a href="#features" onclick="document.getElementById('navMobile').classList.remove('open')">Features</a>
-    <a href="#pricing" onclick="document.getElementById('navMobile').classList.remove('open')">Pricing</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
     <a href="/login">Sign in</a>
     <a href="/register" class="btn btn-primary" style="text-align:center;">Get started free</a>
 </div>
@@ -64,6 +64,10 @@
 lucide.createIcons();
 document.getElementById('navToggle').addEventListener('click', function() {
     document.getElementById('navMobile').classList.toggle('open');
+});
+// Tapping any mobile-nav link closes the menu (converted from inline onclick).
+document.querySelectorAll('#navMobile a').forEach(function (a) {
+    a.addEventListener('click', function () { document.getElementById('navMobile').classList.remove('open'); });
 });
 // Close mobile nav when clicking outside
 document.addEventListener('click', function(e) {

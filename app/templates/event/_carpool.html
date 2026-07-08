@@ -168,8 +168,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="field" style="margin:0;">
                 <label style="font-size:12px;font-weight:600;margin-bottom:3px;display:block;">Role</label>
-                <select name="role" id="carpool-role" style="font-size:13px;padding:5px 8px;"
-                        onchange="carpoolToggleDriverFields(this.value)">
+                <select name="role" id="carpool-role" style="font-size:13px;padding:5px 8px;">
                     <option value="driver" {% if my_offer and my_offer.role == 'driver' %}selected{% endif %}>I can drive</option>
                     <option value="rider" {% if my_offer and my_offer.role == 'rider' %}selected{% endif %}>I need a ride</option>
                 </select>
@@ -197,7 +196,7 @@
     {% endif %}
 </div>
 
-<script nonce="{{ csp_nonce }}">
+<script nonce="{{ g.csp_nonce }}">
 function carpoolToggleDriverFields(role) {
     var isDriver = role === 'driver';
     document.getElementById('carpool-seats-field').style.display = isDriver ? '' : 'none';
@@ -205,7 +204,10 @@ function carpoolToggleDriverFields(role) {
 }
 (function() {
     var sel = document.getElementById('carpool-role');
-    if (sel) carpoolToggleDriverFields(sel.value);
+    if (sel) {
+        carpoolToggleDriverFields(sel.value);
+        sel.addEventListener('change', function () { carpoolToggleDriverFields(sel.value); });
+    }
 })();
 </script>
 
