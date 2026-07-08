@@ -342,6 +342,11 @@ def create_app(test_config=None):
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
             f"script-src 'self' https://unpkg.com 'nonce-{nonce}'; "
+            # Inline event-handler attributes (onchange/onclick — e.g. the role
+            # dropdown's auto-submit) are governed by script-src-attr. Allow them
+            # here; the nonce in script-src still blocks injected <script> tags
+            # (the primary XSS vector), and Jinja autoescaping guards the rest.
+            "script-src-attr 'unsafe-inline'; "
             "style-src 'self' https://fonts.googleapis.com https://unpkg.com 'unsafe-inline'; "
             "font-src 'self' https://fonts.gstatic.com; "
             f"img-src {img_src}; "
