@@ -1092,7 +1092,6 @@ def album_detail(album_id):
 
 @main.route('/albums/<int:album_id>/upload', methods=['POST'])
 @login_required
-@contributor_or_admin_required
 @requires_plan
 def upload_photos(album_id):
     album = db.session.get(Album, album_id)
