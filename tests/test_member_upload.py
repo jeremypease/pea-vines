@@ -51,7 +51,7 @@ def test_member_still_cannot_create_album(app):
     # Album creation remains a contributor/admin action.
     with app.app_context():
         _member(app)
-    r = _login(app, 'photomember@pease-family.com').post(
+    _login(app, 'photomember@pease-family.com').post(
         '/albums/add', data={'name': 'Sneaky Album'}, follow_redirects=False)
     with app.app_context():
         assert Album.query.filter_by(name='Sneaky Album').first() is None
