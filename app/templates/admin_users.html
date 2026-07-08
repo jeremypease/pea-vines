@@ -126,6 +126,15 @@
             <h3>All members</h3>
             <span style="font-size:13px;color:var(--slate);">{{ people|length }} total</span>
         </div>
+
+        {# Role legend — so admins know what they're choosing when they set a role below #}
+        <div style="font-size:12.5px;color:var(--slate);background:var(--leaf-mist);border-radius:var(--r-s);padding:10px 14px;margin-bottom:16px;line-height:1.7;">
+            <strong style="color:var(--ink);">What the roles mean</strong><br>
+            <strong>Member</strong> — view &amp; take part (RSVP, comment, chat). &nbsp;·&nbsp;
+            <strong>Contributor</strong> — a member who can also invite family, create albums &amp; upload photos, and post announcements. &nbsp;·&nbsp;
+            <strong>Admin</strong> — full control: manage members &amp; roles, circle settings, events, and deletions.
+        </div>
+
         <div class="member-row member-row-head">
             <div>Person</div><div>Role</div><div>Account</div><div>Actions</div>
         </div>
@@ -168,7 +177,7 @@
                     {% if person.user.status == 'approved' %}
                     <form method="POST" action="/admin/set-role/{{ person.user.id }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <select name="role" data-autosubmit style="font-size:12px;padding:3px 6px;border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:var(--paper);cursor:pointer;">
+                        <select name="role" data-autosubmit title="Member: view &amp; take part · Contributor: also invite family, add photos &amp; announcements · Admin: full control" style="font-size:12px;padding:3px 6px;border:1px solid var(--hairline-strong);border-radius:var(--r-s);background:var(--paper);cursor:pointer;">
                             <option value="" {% if not person.user.is_admin and not person.user.is_delegate %}selected{% endif %}>Member</option>
                             <option value="contributor" {% if person.user.is_delegate %}selected{% endif %}>Contributor</option>
                             <option value="admin" {% if person.user.is_admin %}selected{% endif %}>Admin</option>
