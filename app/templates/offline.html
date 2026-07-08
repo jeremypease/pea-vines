@@ -40,7 +40,10 @@
         <img src="/static/assets/swugl-mark.svg" alt="Swugl">
         <h1>You're offline</h1>
         <p>Check your connection and try again. Your family circle will be waiting.</p>
-        <button onclick="window.location.reload()">Try again</button>
+        <button id="retry-btn">Try again</button>
     </div>
+    <script nonce="{{ g.csp_nonce }}">
+        document.getElementById('retry-btn').addEventListener('click', function () { window.location.reload(); });
+    </script>
 </body>
 </html>
