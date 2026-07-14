@@ -17,25 +17,32 @@ def test_local_path_allows_normal_keys(app):
         assert p.endswith(os.path.join('photos', 'abc123.jpg'))
 
 
-def test_local_path_rejects_traversal(app):
+def test_local_path_neutralizes_traversal(app):
+    """Traversal is stripped (secure_filename per segment); the resolved path
+    can never escape the uploads root."""
     with app.app_context():
+        root = os.path.realpath(os.path.join(app.root_path, 'static', 'uploads'))
         for evil in ('../../etc/passwd', 'photos/../../../../etc/passwd',
-                     '/etc/passwd', '..'):
-            with pytest.raises(ValueError):
-                storage._local_upload_path(evil)
+                     '/etc/passwd', '..', '....//....//etc/passwd'):
+            p = storage._local_upload_path(evil)
+            assert p == root or p.startswith(root + os.sep)
 
 
-def test_get_object_bytes_blocks_traversal_key(app):
+def test_get_object_bytes_cannot_escape_uploads(app):
     with app.app_context():
-        # A crafted 'uploads/...' key can't escape the uploads root.
-        with pytest.raises(ValueError):
+        # A crafted 'uploads/..' key is neutralised into the uploads dir, so it
+        # can't read a file outside it — the neutralised path doesn't exist.
+        with pytest.raises(OSError):
             storage.get_object_bytes('uploads/../../../../etc/passwd')
 
 
-def test_delete_object_blocks_traversal_key(app):
+def test_delete_object_cannot_escape_uploads(app):
     with app.app_context():
-        with pytest.raises(ValueError):
-            storage.delete_object('uploads/../../../../etc/passwd')
+        real_passwd = os.path.realpath('/etc/hosts')  # a real file outside uploads
+        before = os.path.exists(real_passwd)
+        # Neutralised to a non-existent path inside uploads → safe no-op.
+        storage.delete_object('uploads/../../../../etc/hosts')
+        assert os.path.exists(real_passwd) == before   # untouched
 
 
 def test_raw_gif_upload_round_trips_locally(app):
