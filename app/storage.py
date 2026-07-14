@@ -116,8 +116,13 @@ def _local_upload_path(rel_key):
     '..' or an absolute component, so a key or folder can never traverse the
     filesystem. Raises ValueError on an out-of-bounds path — fail closed.
     """
+    # Sanitise every path segment (secure_filename strips '/', '..', and other
+    # traversal characters), then confirm the resolved path is still inside the
+    # uploads root. Two independent barriers: neither a key nor a folder can
+    # escape static/uploads/.
+    parts = [secure_filename(p) for p in rel_key.split('/') if p not in ('', '.', '..')]
     root = os.path.realpath(os.path.join(current_app.root_path, 'static', 'uploads'))
-    resolved = os.path.realpath(os.path.join(root, rel_key))
+    resolved = os.path.realpath(os.path.join(root, *parts))
     if resolved != root and not resolved.startswith(root + os.sep):
         raise ValueError('unsafe upload path')
     return resolved
