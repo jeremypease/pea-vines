@@ -1,4 +1,6 @@
-from flask import jsonify
+from functools import wraps
+
+from flask import jsonify, current_app
 from flask_jwt_extended import get_jwt
 
 from ..storage import photo_url
@@ -7,6 +9,22 @@ from ..billing import family_has_paid_access
 
 def error_response(status, message, code=None):
     return jsonify({'error': message, 'code': code or message}), status
+
+
+def requires_feature(feature):
+    """Gate an API endpoint behind a live feature flag, mirroring the web
+    `_gate_disabled_features`. The mobile API isn't prefix-gated, so cut
+    features must be blocked per-endpoint. Returns 404 (feature doesn't exist
+    in this build). Place above `@jwt_required()` so it short-circuits first.
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if feature not in current_app.config.get('ENABLED_FEATURES', ()):
+                return error_response(404, 'not found')
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def api_family_id():
