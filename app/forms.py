@@ -223,6 +223,12 @@ class EventForm(FlaskForm):
         ('monthly', 'Monthly'), ('yearly', 'Yearly'),
     ], validators=[Optional()])
     recur_until = DateField('Repeat until', validators=[Optional()])
+    setup_preset = SelectField('Quick start', choices=[
+        ('', 'Blank slate'),
+        ('weekend_trip', 'Weekend trip'),
+        ('holiday_gathering', 'Holiday gathering'),
+        ('family_reunion', 'Family reunion'),
+    ], validators=[Optional()])
     has_meals = BooleanField('Meals')
     has_assignments = BooleanField('Assignments')
     has_sleeping = BooleanField('Sleeping Arrangements')
