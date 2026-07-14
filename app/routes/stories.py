@@ -8,7 +8,7 @@ from .. import db
 from ..models import StoryPrompt, StoryResponse, Person
 from ..forms import StoryAnswerForm
 from ..billing import requires_plan, family_has_paid_access
-from . import main
+from . import main, _safe_next
 
 
 def _can_manage(person):
@@ -115,7 +115,7 @@ def story_enable(person_id):
     person.stories_enabled = True
     db.session.commit()
     flash(f'{person.get_display_name()} is now part of Family Stories.', 'info')
-    return redirect(request.referrer or url_for('main.stories'))
+    return redirect(_safe_next(request.referrer) or url_for('main.stories'))
 
 
 @main.route('/stories/person/<int:person_id>/disable', methods=['POST'])
@@ -128,7 +128,7 @@ def story_disable(person_id):
     person.stories_enabled = False
     db.session.commit()
     flash(f'{person.get_display_name()} removed from Family Stories.', 'info')
-    return redirect(request.referrer or url_for('main.stories'))
+    return redirect(_safe_next(request.referrer) or url_for('main.stories'))
 
 
 @main.route('/stories/person/<int:person_id>/new-prompt', methods=['POST'])
@@ -143,7 +143,7 @@ def story_new_prompt(person_id):
     question = generate_story_prompt(person, recent_questions=_recent_questions(person))
     if not question:
         flash('Story prompts need AI to be configured. Please try again later.', 'error')
-        return redirect(request.referrer or url_for('main.stories'))
+        return redirect(_safe_next(request.referrer) or url_for('main.stories'))
     prompt = StoryPrompt(family_id=person.family_id, person_id=person.id,
                          question=question.strip(), source='manual')
     person.stories_enabled = True
