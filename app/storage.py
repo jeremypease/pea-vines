@@ -1,10 +1,12 @@
 import io
 import os
+import shutil
 import time
 import uuid
 import boto3
 from botocore.config import Config
 from flask import current_app, url_for
+from werkzeug.utils import secure_filename
 from PIL import Image, ImageOps
 
 try:
@@ -136,6 +138,19 @@ def _store(data, key, ext):
             f.write(data)
 
 
+def _store_upload(file, rel_key):
+    """Save an uploaded file object into the local uploads store (dev fallback).
+
+    Mirrors _store's contained-path + open() flow so raw (unprocessed) GIF and
+    document uploads share the same traversal guard instead of writing the path
+    inline.
+    """
+    abs_path = _local_upload_path(rel_key)
+    os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+    with open(abs_path, 'wb') as f:
+        shutil.copyfileobj(file.stream, f)
+
+
 def upload_photo(file, folder='photos', with_thumb=False):
     """Upload a photo file; returns a storage key (str) or None on bad
     extension, oversize, or undecodable image.
@@ -164,7 +179,9 @@ def upload_photo(file, folder='photos', with_thumb=False):
         return (key, thumb_key) if with_thumb else key
 
     # GIF (or HEIC without decoder support): store unprocessed
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    # ext is already allowlisted and the stem is a random uuid; secure_filename
+    # is a belt-and-braces sanitizer CodeQL recognises as a path-injection barrier.
+    filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
     if _r2_enabled():
         key = f"{folder}/{filename}"
         _client().upload_fileobj(
@@ -174,9 +191,8 @@ def upload_photo(file, folder='photos', with_thumb=False):
             ExtraArgs={'ContentType': _content_type(ext)},
         )
     else:
-        abs_path = _local_upload_path(f"{folder}/{filename}")
-        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-        file.save(abs_path)
+        rel = f"{folder}/{filename}"
+        _store_upload(file, rel)
         key = f"uploads/{folder}/{filename}"
     return (key, None) if with_thumb else key
 
@@ -185,7 +201,9 @@ def upload_document(file, folder='documents'):
     ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
     if ext not in ALLOWED_DOC_EXTS:
         return None
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    # ext is already allowlisted and the stem is a random uuid; secure_filename
+    # is a belt-and-braces sanitizer CodeQL recognises as a path-injection barrier.
+    filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
     file_size = _file_size(file)
     if file_size > MAX_PHOTO_BYTES:
         return None
@@ -198,9 +216,8 @@ def upload_document(file, folder='documents'):
             ExtraArgs={'ContentType': _content_type(ext)},
         )
     else:
-        abs_path = _local_upload_path(f"{folder}/{filename}")
-        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-        file.save(abs_path)
+        rel = f"{folder}/{filename}"
+        _store_upload(file, rel)
         key = f"uploads/{folder}/{filename}"
     return key, ext, file_size
 
