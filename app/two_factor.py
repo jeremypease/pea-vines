@@ -123,7 +123,9 @@ def passkey_register_complete():
             expected_origin=_origin(),
         )
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        # Log the library's detail server-side; don't echo it to the client.
+        current_app.logger.warning('WebAuthn verification failed: %s', e)
+        return jsonify({'error': 'Verification failed. Please try again.'}), 400
 
     cred = UserCredential(
         user_id=current_user.id,
@@ -249,7 +251,9 @@ def login_passkey_complete():
             credential_current_sign_count=stored.sign_count,
         )
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        # Log the library's detail server-side; don't echo it to the client.
+        current_app.logger.warning('WebAuthn verification failed: %s', e)
+        return jsonify({'error': 'Verification failed. Please try again.'}), 400
 
     stored.sign_count = verification.new_sign_count
     db.session.commit()
@@ -338,7 +342,9 @@ def login_2fa_passkey_complete():
             credential_current_sign_count=stored.sign_count,
         )
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        # Log the library's detail server-side; don't echo it to the client.
+        current_app.logger.warning('WebAuthn verification failed: %s', e)
+        return jsonify({'error': 'Verification failed. Please try again.'}), 400
 
     stored.sign_count = verification.new_sign_count
     db.session.commit()
