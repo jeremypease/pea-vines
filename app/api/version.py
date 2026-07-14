@@ -1,6 +1,5 @@
 from flask import jsonify, current_app
 from . import api
-from .. import db
 from ..models import AppVersion
 
 

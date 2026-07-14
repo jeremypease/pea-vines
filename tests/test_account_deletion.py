@@ -1,5 +1,4 @@
 import io
-import pytest
 from PIL import Image
 from app.models import Family, User, Person, ChatMessage, StoryPrompt, StoryResponse
 from app import db

@@ -2,10 +2,8 @@
 Tests for engagement notifications (Theme 2): notify_family fan-out and the
 poll/card/photo/new-member triggers, including surprise-card recipient exclusion.
 """
-import pytest
-from datetime import date
 from app import db
-from app.models import User, Person, Notification, Album
+from app.models import User, Person, Notification
 from app.notifications import notify_family
 
 

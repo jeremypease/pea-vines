@@ -233,7 +233,7 @@ class SystemAnnouncement(db.Model):
         now = datetime.utcnow()
         return cls.query.filter(
             cls.is_active == True,
-            db.or_(cls.expires_at == None, cls.expires_at > now)
+            db.or_(cls.expires_at.is_(None), cls.expires_at > now)
         ).order_by(cls.created_at.desc()).first()
 
 
