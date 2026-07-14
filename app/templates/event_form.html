@@ -168,6 +168,14 @@
             {{ form.description(rows=3, id="f-description") }}
         </div>
 
+        <div class="field">
+            {{ form.setup_preset.label }}
+            {{ form.setup_preset(id="f-setup-preset") }}
+            <div style="font-size:12px;color:var(--slate);margin-top:4px;">
+                Choose a starter plan to pre-fill sleeping spots, meals, and shared tasks.
+            </div>
+        </div>
+
         {# Sections — meals/assignments/sleeping are paid; carpool is free #}
         <div class="field">
             <label>Sections</label>
