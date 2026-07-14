@@ -7,7 +7,7 @@ from .. import db
 from ..models import Album, Photo
 from ..storage import upload_photo, photo_url
 from . import api
-from .utils import api_family_id, error_response
+from .utils import api_family_id, error_response, requires_feature
 
 _MAX_LIMIT = 100
 _DEFAULT_LIMIT = 50
@@ -43,6 +43,7 @@ def _serialize_album(album, include_photos=False):
 
 
 @api.get('/albums')
+@requires_feature('photos')
 @jwt_required()
 def list_albums():
     fid = api_family_id()
@@ -56,6 +57,7 @@ def list_albums():
 
 
 @api.get('/albums/<int:album_id>')
+@requires_feature('photos')
 @jwt_required()
 def get_album(album_id):
     fid = api_family_id()
@@ -66,6 +68,7 @@ def get_album(album_id):
 
 
 @api.get('/albums/<int:album_id>/photos')
+@requires_feature('photos')
 @jwt_required()
 def list_album_photos(album_id):
     fid = api_family_id()
@@ -96,6 +99,7 @@ def list_album_photos(album_id):
 
 
 @api.post('/albums/<int:album_id>/photos')
+@requires_feature('photos')
 @jwt_required()
 def upload_album_photo(album_id):
     fid = api_family_id()
@@ -148,6 +152,7 @@ def upload_album_photo(album_id):
 
 
 @api.get('/photos/<int:photo_id>')
+@requires_feature('photos')
 @jwt_required()
 def get_photo(photo_id):
     fid = api_family_id()
