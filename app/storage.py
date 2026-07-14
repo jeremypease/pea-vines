@@ -1,10 +1,12 @@
 import io
 import os
+import shutil
 import time
 import uuid
 import boto3
 from botocore.config import Config
 from flask import current_app, url_for
+from werkzeug.utils import secure_filename
 from PIL import Image, ImageOps
 
 try:
@@ -105,6 +107,27 @@ def _process_image(file, ext):
     return display_buf.getvalue(), thumb_buf.getvalue(), out_ext
 
 
+def _local_upload_path(rel_key):
+    """Absolute filesystem path for rel_key under static/uploads/, proven to
+    stay inside it.
+
+    The local-dev store writes and reads uploads on disk (production uses R2).
+    This resolves the path and confirms it can't escape the uploads root via
+    '..' or an absolute component, so a key or folder can never traverse the
+    filesystem. Raises ValueError on an out-of-bounds path — fail closed.
+    """
+    # Sanitise every path segment (secure_filename strips '/', '..', and other
+    # traversal characters), then confirm the resolved path is still inside the
+    # uploads root. Two independent barriers: neither a key nor a folder can
+    # escape static/uploads/.
+    parts = [secure_filename(p) for p in rel_key.split('/') if p not in ('', '.', '..')]
+    root = os.path.realpath(os.path.join(current_app.root_path, 'static', 'uploads'))
+    resolved = os.path.realpath(os.path.join(root, *parts))
+    if resolved != root and not resolved.startswith(root + os.sep):
+        raise ValueError('unsafe upload path')
+    return resolved
+
+
 def _store(data, key, ext):
     if _r2_enabled():
         _client().put_object(
@@ -114,10 +137,23 @@ def _store(data, key, ext):
             ContentType=_content_type(ext),
         )
     else:
-        abs_path = os.path.join(current_app.root_path, 'static', 'uploads', key)
+        abs_path = _local_upload_path(key)
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         with open(abs_path, 'wb') as f:
             f.write(data)
+
+
+def _store_upload(file, rel_key):
+    """Save an uploaded file object into the local uploads store (dev fallback).
+
+    Mirrors _store's contained-path + open() flow so raw (unprocessed) GIF and
+    document uploads share the same traversal guard instead of writing the path
+    inline.
+    """
+    abs_path = _local_upload_path(rel_key)
+    os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+    with open(abs_path, 'wb') as f:
+        shutil.copyfileobj(file.stream, f)
 
 
 def upload_photo(file, folder='photos', with_thumb=False):
@@ -148,7 +184,9 @@ def upload_photo(file, folder='photos', with_thumb=False):
         return (key, thumb_key) if with_thumb else key
 
     # GIF (or HEIC without decoder support): store unprocessed
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    # ext is already allowlisted and the stem is a random uuid; secure_filename
+    # is a belt-and-braces sanitizer CodeQL recognises as a path-injection barrier.
+    filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
     if _r2_enabled():
         key = f"{folder}/{filename}"
         _client().upload_fileobj(
@@ -158,9 +196,8 @@ def upload_photo(file, folder='photos', with_thumb=False):
             ExtraArgs={'ContentType': _content_type(ext)},
         )
     else:
-        local_dir = os.path.join(current_app.root_path, 'static', 'uploads', folder)
-        os.makedirs(local_dir, exist_ok=True)
-        file.save(os.path.join(local_dir, filename))
+        rel = f"{folder}/{filename}"
+        _store_upload(file, rel)
         key = f"uploads/{folder}/{filename}"
     return (key, None) if with_thumb else key
 
@@ -169,7 +206,9 @@ def upload_document(file, folder='documents'):
     ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
     if ext not in ALLOWED_DOC_EXTS:
         return None
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    # ext is already allowlisted and the stem is a random uuid; secure_filename
+    # is a belt-and-braces sanitizer CodeQL recognises as a path-injection barrier.
+    filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
     file_size = _file_size(file)
     if file_size > MAX_PHOTO_BYTES:
         return None
@@ -182,9 +221,8 @@ def upload_document(file, folder='documents'):
             ExtraArgs={'ContentType': _content_type(ext)},
         )
     else:
-        local_dir = os.path.join(current_app.root_path, 'static', 'uploads', folder)
-        os.makedirs(local_dir, exist_ok=True)
-        file.save(os.path.join(local_dir, filename))
+        rel = f"{folder}/{filename}"
+        _store_upload(file, rel)
         key = f"uploads/{folder}/{filename}"
     return key, ext, file_size
 
@@ -194,7 +232,7 @@ def delete_object(key):
     if not key:
         return
     if key.startswith('uploads/'):
-        abs_path = os.path.join(current_app.root_path, 'static', key)
+        abs_path = _local_upload_path(key[len('uploads/'):])
         if os.path.exists(abs_path):
             os.remove(abs_path)
     elif _r2_enabled():
@@ -206,7 +244,7 @@ def delete_object(key):
 def get_object_bytes(key):
     """Return (bytes, content_type) for a stored object."""
     if key.startswith('uploads/'):
-        abs_path = os.path.join(current_app.root_path, 'static', key)
+        abs_path = _local_upload_path(key[len('uploads/'):])
         with open(abs_path, 'rb') as f:
             return f.read(), _content_type(key.rsplit('.', 1)[-1].lower())
     resp = _client().get_object(Bucket=current_app.config['R2_BUCKET_NAME'], Key=key)
