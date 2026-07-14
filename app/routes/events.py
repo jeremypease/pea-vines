@@ -1832,22 +1832,25 @@ def event_sleeping_bulk_add(event_id):
         return redirect(url_for('main.events_list'))
     raw = request.form.get('bulk_rooms', '')
     added = 0
-    # Parse a trailing capacity like "Master bedroom 2" or "Bunk room (4)".
-    # Anchored to the end with no overlapping quantifiers, so it can't backtrack
-    # catastrophically the way the old ^(.+?)\s*...$ pattern could (ReDoS).
-    cap_re = re.compile(r'[\(\[]?(\d+)[\)\]]?\s*$')
     for line in raw.splitlines():
         line = line.strip()
         if not line:
             continue
+        # Parse an optional trailing capacity like "Master bedroom 2",
+        # "Bunk room (4)", "Loft [6]". Done as a linear right-to-left scan
+        # rather than a regex, so untrusted input can't trigger a ReDoS.
         name, cap = line, None
-        m = cap_re.search(line)
-        if m:
-            candidate = line[:m.start()].strip().rstrip('([').strip()
-            if candidate:                       # a room name precedes the number
-                name, cap = candidate, int(m.group(1))
+        trimmed = line.rstrip(')] ')            # drop trailing spaces / closing bracket
+        start = len(trimmed)
+        while start > 0 and trimmed[start - 1].isdigit():
+            start -= 1
+        digits = trimmed[start:]
+        if 0 < len(digits) <= 4:                # a plausible room capacity
+            prefix = trimmed[:start].rstrip('([ ').strip()
+            if prefix:                          # a name precedes the number
+                name, cap = prefix, int(digits)
         if name:
-            db.session.add(EventSleepingSpot(event_id=event_id, name=name, capacity=cap))
+            db.session.add(EventSleepingSpot(event_id=event_id, name=name[:150], capacity=cap))
             added += 1
     if added:
         db.session.commit()

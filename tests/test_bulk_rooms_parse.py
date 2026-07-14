@@ -31,12 +31,13 @@ def test_bulk_rooms_parses_names_and_capacities(app, auth_client):
 def test_bulk_rooms_no_redos_on_adversarial_input(app, auth_client):
     with app.app_context():
         eid = _event(app)
-    # The kind of long, ambiguous line that made the old ^(.+?)\s*...$ pattern
-    # backtrack catastrophically. The linear rewrite must handle it instantly.
-    evil = ('a ' * 5000).strip()
-    start = time.time()
-    r = auth_client.post(f'/events/{eid}/sleeping/bulk-add',
-                         data={'bulk_rooms': evil}, follow_redirects=False)
-    elapsed = time.time() - start
-    assert r.status_code == 302
-    assert elapsed < 2.0, f'bulk-add took {elapsed:.1f}s — possible ReDoS regression'
+    # The inputs that made the regexes backtrack: a long ambiguous line, and a
+    # long run of digits (CodeQL's "many repetitions of '9'"). The linear scan
+    # must handle both instantly.
+    for evil in [('a ' * 5000).strip(), '9' * 8000, '(' * 8000 + '4)']:
+        start = time.time()
+        r = auth_client.post(f'/events/{eid}/sleeping/bulk-add',
+                             data={'bulk_rooms': evil}, follow_redirects=False)
+        elapsed = time.time() - start
+        assert r.status_code == 302
+        assert elapsed < 2.0, f'bulk-add took {elapsed:.1f}s — possible ReDoS regression'
