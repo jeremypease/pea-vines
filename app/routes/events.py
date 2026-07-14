@@ -1836,15 +1836,21 @@ def event_sleeping_bulk_add(event_id):
         line = line.strip()
         if not line:
             continue
-        # Try to parse trailing number as capacity: "Master bedroom 2" or "Bunk room (4)"
-        import re as _re
-        m = _re.match(r'^(.+?)\s*[\(\[]?(\d+)[\)\]]?\s*$', line)
-        if m:
-            name, cap = m.group(1).strip(), int(m.group(2))
-        else:
-            name, cap = line, None
+        # Parse an optional trailing capacity like "Master bedroom 2",
+        # "Bunk room (4)", "Loft [6]". Done as a linear right-to-left scan
+        # rather than a regex, so untrusted input can't trigger a ReDoS.
+        name, cap = line, None
+        trimmed = line.rstrip(')] ')            # drop trailing spaces / closing bracket
+        start = len(trimmed)
+        while start > 0 and trimmed[start - 1].isdigit():
+            start -= 1
+        digits = trimmed[start:]
+        if 0 < len(digits) <= 4:                # a plausible room capacity
+            prefix = trimmed[:start].rstrip('([ ').strip()
+            if prefix:                          # a name precedes the number
+                name, cap = prefix, int(digits)
         if name:
-            db.session.add(EventSleepingSpot(event_id=event_id, name=name, capacity=cap))
+            db.session.add(EventSleepingSpot(event_id=event_id, name=name[:150], capacity=cap))
             added += 1
     if added:
         db.session.commit()
