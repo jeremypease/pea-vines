@@ -1,6 +1,6 @@
 """Future / scheduled messages: write now, delivered to a family member on a
 future date. Hidden from the recipient until delivery."""
-from datetime import datetime, date
+from datetime import date
 
 from flask import render_template, redirect, url_for, flash, abort
 from flask_login import login_required, current_user

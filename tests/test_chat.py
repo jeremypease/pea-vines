@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime, timedelta
 from app.models import ChatMessage, User
 
@@ -127,7 +126,7 @@ def test_cannot_delete_after_window(app):
 
 def test_cross_family_delete_blocked(app, auth_client):
     """The route filter prevents a user from deleting a message from another family."""
-    from app.models import ChatMessage as CM, Family
+    from app.models import ChatMessage as CM
     from app import db
     with app.app_context():
         user = User.query.filter_by(email='admin@pease-family.com').first()
@@ -209,7 +208,6 @@ def _add_member(family_id, email):
 
 def test_chat_notifications_collapse_to_one(app, auth_client):
     """Multiple messages produce a single rolling notification per recipient."""
-    from app import db
     from app.models import Notification, User
     with app.app_context():
         admin = User.query.filter_by(email='admin@pease-family.com').first()

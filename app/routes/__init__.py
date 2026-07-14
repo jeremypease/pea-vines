@@ -25,6 +25,23 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+def _safe_next(target):
+    """Return target only if it's a local, same-site path; else None.
+
+    Guards the post-login `?next=` redirect against open-redirect abuse:
+    rejects anything with a scheme or host, protocol-relative "//evil.com",
+    and backslash "/\\evil.com" (which browsers resolve to an external host).
+    """
+    if not target:
+        return None
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc:
+        return None
+    if not target.startswith('/') or target.startswith('//') or target.startswith('/\\'):
+        return None
+    return target
+
+
 def _ensure_membership(user):
     """Upsert a UserPodMembership for user's home pod. Call after flush so user.id exists."""
     existing = UserPodMembership.query.filter_by(
@@ -541,17 +558,10 @@ def login():
             return redirect(url_for('tf.login_2fa'))
         login_user(user, remember=form.remember_me.data)
         session['active_family_id'] = user.family_id
-        next_page = request.args.get('next')
-        # Only allow same-site relative paths to prevent open redirect. The bare
-        # netloc check misses protocol-relative ("//evil.com") and backslash
-        # ("/\\evil.com") tricks that browsers resolve to an external host.
-        if next_page and (
-            urlparse(next_page).netloc
-            or not next_page.startswith('/')
-            or next_page.startswith('//')
-            or next_page.startswith('/\\')
-        ):
-            next_page = None
+        # Only ever redirect to a local, same-site path. Anything with a scheme
+        # or host, a protocol-relative "//evil.com", or a backslash "/\\evil.com"
+        # (which browsers resolve to an external host) is rejected outright.
+        next_page = _safe_next(request.args.get('next'))
         return redirect(next_page or url_for('main.home'))
     return render_template('login.html', form=form)
 

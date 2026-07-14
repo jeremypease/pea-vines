@@ -2,9 +2,8 @@
 Gift registries: paid-gated, and the recipient is blocked from seeing their
 own registry at every layer (list, detail, add, claim).
 """
-from datetime import date
 from app import db
-from app.models import User, Person, GiftRegistry, GiftRegistryItem, Event
+from app.models import User, Person, GiftRegistry, GiftRegistryItem
 
 
 def _admin():
@@ -72,7 +71,7 @@ def test_recipient_cannot_view_own_registry(app):
 def test_recipient_registry_hidden_from_their_list(app):
     with app.app_context():
         uid, pid = _member(app, 'honoree2@pease-family.com')
-        rid = _registry_for(pid)
+        _registry_for(pid)
     client = _login(app, 'honoree2@pease-family.com')
     html = client.get('/registries').data.decode()
     assert 'Birthday' not in html        # their own registry is not listed

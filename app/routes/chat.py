@@ -29,7 +29,7 @@ def _notify_chat_members(msg):
     recipients = User.query.filter(
         User.family_id == msg.family_id,
         User.id != msg.author_id,
-        db.or_(User.chat_last_seen_at == None, User.chat_last_seen_at < cutoff),
+        db.or_(User.chat_last_seen_at.is_(None), User.chat_last_seen_at < cutoff),
     ).all()
     author_name = msg.author.get_full_name()
     for recipient in recipients:
