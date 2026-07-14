@@ -70,7 +70,7 @@ def test_serialize_person_includes_signed_photo_url(r2_app):
     person.photo_path = 'photos/face.jpg'
     data = serialize_person(person)
     assert data['photo_path'] == 'photos/face.jpg'
-    assert data['photo_url'].startswith('https://testacct.r2.cloudflarestorage.com')
+    assert data['photo_url'].startswith('https://testacct.r2.cloudflarestorage.com/')
     assert 'X-Amz-Signature=' in data['photo_url']
 
 
