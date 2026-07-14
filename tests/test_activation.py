@@ -4,7 +4,7 @@ one-step invite from the add-member form.
 """
 import pytest
 from app import db
-from app.models import Family, User, Person
+from app.models import User, Person
 
 
 @pytest.fixture()

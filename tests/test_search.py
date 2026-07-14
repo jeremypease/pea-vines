@@ -3,7 +3,7 @@ Tests for multi-entity search (Theme 3): matches across people, events,
 announcements, albums/photos, and documents, scoped to the family.
 """
 import pytest
-from datetime import date, datetime
+from datetime import date
 from app import db
 from app.models import User, Person, Event, Announcement, Album, Photo, Document
 

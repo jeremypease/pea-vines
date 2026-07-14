@@ -8,7 +8,7 @@ to paid plans. Carpool stays free. Already-enabled sections survive a downgrade
 import pytest
 from datetime import date
 from app import db
-from app.models import Family, User, Event
+from app.models import User, Event
 
 
 def _set_plan(app, plan):

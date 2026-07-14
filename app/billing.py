@@ -1,6 +1,5 @@
 import stripe
 import math
-import os
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import (Blueprint, render_template, redirect, url_for, flash,
@@ -184,7 +183,7 @@ def connect_refresh():
 @login_required
 def event_payout(event_id):
     """Transfer collected event payments to the family's connected Stripe account."""
-    from .models import Event, EventPaymentConfig, EventPaymentRecord
+    from .models import Event, EventPaymentRecord
     s = _stripe()
     if not s:
         flash('Stripe is not configured.', 'error')

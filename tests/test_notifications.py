@@ -1,7 +1,6 @@
 """
 Tests for notification preferences: model helpers, seeding, and route behavior.
 """
-import pytest
 from app import db
 from app.models import User, NotificationPreference, NOTIFICATION_EVENTS
 

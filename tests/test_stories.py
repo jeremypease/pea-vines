@@ -6,7 +6,7 @@ import pytest
 from datetime import date
 from app import db
 import app.ai as ai_module
-from app.models import Family, User, Person, StoryPrompt, StoryResponse, Notification
+from app.models import User, Person, StoryPrompt, Notification
 
 
 @pytest.fixture(autouse=True)

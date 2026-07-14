@@ -1,7 +1,6 @@
 """Two-factor authentication — passkeys (WebAuthn) and TOTP."""
 import base64
 import io
-import json
 
 import pyotp
 import qrcode

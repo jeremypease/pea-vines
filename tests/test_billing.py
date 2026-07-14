@@ -8,7 +8,7 @@ HMAC signature verification.
 import pytest
 from datetime import datetime, timedelta
 from app import db
-from app.models import Family, User
+from app.models import Family
 from app.billing import _handle_event, family_has_paid_access, trial_days_remaining
 
 

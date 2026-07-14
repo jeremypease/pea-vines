@@ -17,9 +17,7 @@ from flask.cli import with_appcontext
 from . import db
 from .models import (Family, User, Event, EventMeal, EventMealItem, EventAssignment,
                      EventSleepingSpot, EventRSVP, NotificationPreference,
-                     Person, SpouseRelationship, ParentRelationship,
-                     PollVote, CardSignature, AnnouncementReaction,
-                     PhotoTag, CarpoolOffer, EventSurveyResponse)
+                     Person)
 from .notifications import send_family_digest, create_notification
 from .email import (
     send_nudge_day3_email,
@@ -61,7 +59,7 @@ def email_sequence(dry_run):
 
     now = datetime.utcnow()
     families = Family.query.all()
-    sent = skipped = 0
+    sent = 0
 
     with _request_ctx():
         for family in families:

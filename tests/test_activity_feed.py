@@ -4,7 +4,7 @@ activity, newest first, with photo grouping and family isolation.
 """
 from datetime import datetime, timedelta, date
 from app import db
-from app.models import (User, Person, Announcement, Event, Poll, Album, Photo,
+from app.models import (User, Announcement, Event, Poll, Album, Photo,
                         StoryPrompt, StoryResponse)
 from app.activity import recent_activity
 

@@ -9,7 +9,7 @@ os.environ.setdefault('FLASK_ENV', 'testing')
 
 from app import create_app, db as _db
 from app.features import ALL_FEATURES
-from app.models import Family, User, Person, Event, UserCredential
+from app.models import Family, User, Person, Event
 from datetime import date
 
 
