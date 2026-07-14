@@ -193,6 +193,66 @@ def _geocode_location(location_str):
     return None, None
 
 
+def _get_setup_preset_config(preset, start_date, end_date):
+    """Return starter content for a guided event setup preset."""
+    if not preset:
+        return None
+    if preset == 'weekend_trip':
+        return {
+            'has_meals': True,
+            'has_assignments': True,
+            'has_sleeping': True,
+            'has_carpool': True,
+            'rooms': [
+                {'name': 'Main bedroom', 'type': 'Bedroom', 'capacity': 2},
+                {'name': 'Living room couch', 'type': 'Couch', 'capacity': 2},
+            ],
+            'tasks': [
+                {'title': 'Set up camp', 'category': 'Setup'},
+                {'title': 'Grocery run', 'category': 'Food'},
+                {'title': 'Pack out trash', 'category': 'Cleanup'},
+            ],
+            'meal_dates': [start_date] if start_date else [],
+            'meal_types': [('breakfast', '8:00 AM'), ('dinner', '6:00 PM')],
+        }
+    if preset == 'holiday_gathering':
+        return {
+            'has_meals': True,
+            'has_assignments': True,
+            'has_sleeping': True,
+            'has_carpool': False,
+            'rooms': [
+                {'name': 'Guest room', 'type': 'Bedroom', 'capacity': 2},
+            ],
+            'tasks': [
+                {'title': 'Set up tables', 'category': 'Setup'},
+                {'title': 'Cook main dish', 'category': 'Food'},
+                {'title': 'Cleanup', 'category': 'Cleanup'},
+            ],
+            'meal_dates': [start_date] if start_date else [],
+            'meal_types': [('dinner', '6:00 PM')],
+        }
+    if preset == 'family_reunion':
+        return {
+            'has_meals': True,
+            'has_assignments': True,
+            'has_sleeping': True,
+            'has_carpool': True,
+            'rooms': [
+                {'name': 'Master bedroom', 'type': 'Bedroom', 'capacity': 2},
+                {'name': 'Bunk room', 'type': 'Cabin bunk', 'capacity': 4},
+            ],
+            'tasks': [
+                {'title': 'Welcome table', 'category': 'Setup'},
+                {'title': 'Coordinate potluck', 'category': 'Food'},
+                {'title': 'Break down chairs', 'category': 'Cleanup'},
+            ],
+            'meal_dates': [start_date] if start_date else [],
+            'meal_types': [('breakfast', '8:00 AM'), ('lunch', '12:00 PM'), ('dinner', '6:00 PM')],
+        }
+    return None
+
+
 @main.route('/events/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -225,6 +285,11 @@ def event_add():
             loc_id = None
             location = form.location.data or None
             lat, lng = _geocode_location(location)
+        preset_config = _get_setup_preset_config(
+            form.setup_preset.data,
+            form.start_date.data,
+            form.end_date.data,
+        )
         _paid = family_has_paid_access(current_user.active_family)
         event = Event(
             family_id=current_user.active_family_id,
@@ -245,10 +310,10 @@ def event_add():
             is_annual=(form.recur_freq.data == 'yearly'),
             # Paid sections silently drop to off on the free plan (the form
             # shows them disabled with an upgrade hint)
-            has_meals=form.has_meals.data and _paid,
-            has_assignments=form.has_assignments.data and _paid,
-            has_sleeping=form.has_sleeping.data and _paid,
-            has_carpool=form.has_carpool.data,
+            has_meals=(form.has_meals.data or bool(preset_config and preset_config.get('has_meals'))) and _paid,
+            has_assignments=(form.has_assignments.data or bool(preset_config and preset_config.get('has_assignments'))) and _paid,
+            has_sleeping=(form.has_sleeping.data or bool(preset_config and preset_config.get('has_sleeping'))) and _paid,
+            has_carpool=form.has_carpool.data or bool(preset_config and preset_config.get('has_carpool')),
         )
         db.session.add(event)
         db.session.flush()
@@ -269,8 +334,17 @@ def event_add():
                 room_type = None
             db.session.add(EventSleepingSpot(event_id=event.id, name=room_name, spot_type=room_type, capacity=capacity))
             room_index += 1
+        # Guided preset rooms if the user picked a starter plan and didn't add any custom rooms
+        if room_index == 0 and event.has_sleeping and preset_config:
+            for room in preset_config.get('rooms', []):
+                db.session.add(EventSleepingSpot(
+                    event_id=event.id,
+                    name=room['name'],
+                    spot_type=room['type'],
+                    capacity=room.get('capacity'),
+                ))
         # Fallback: seed from location template if no rooms were submitted
-        if room_index == 0 and event.has_sleeping and saved_loc and saved_loc.sleeping_spots:
+        if room_index == 0 and event.has_sleeping and not preset_config and saved_loc and saved_loc.sleeping_spots:
             for spot in saved_loc.sleeping_spots:
                 db.session.add(EventSleepingSpot(
                     event_id=event.id, name=spot.name,
@@ -280,6 +354,7 @@ def event_add():
         # Seed meals from the day-grid checkboxes on the form
         _MEAL_LABELS = {'breakfast': 'Breakfast', 'lunch': 'Lunch', 'dinner': 'Dinner'}
         _MEAL_TIMES  = {'breakfast': '8:00 AM',   'lunch': '12:00 PM', 'dinner': '6:00 PM'}
+        meal_seeded = False
         for key in request.form:
             m = re.match(r'^meals\[(\d{4}-\d{2}-\d{2})\]\[(breakfast|lunch|dinner)\]$', key)
             if m:
@@ -294,8 +369,19 @@ def event_add():
                     meal_date=meal_date_val,
                     meal_time=_MEAL_TIMES[meal_type],
                 ))
+                meal_seeded = True
+        if event.has_meals and preset_config and not meal_seeded:
+            for meal_date in preset_config.get('meal_dates', []):
+                for meal_key, meal_time in preset_config.get('meal_types', []):
+                    db.session.add(EventMeal(
+                        event_id=event.id,
+                        name=f'{meal_date.strftime("%A")} {_MEAL_LABELS[meal_key]}',
+                        meal_date=meal_date,
+                        meal_time=meal_time,
+                    ))
 
         # Seed assignments from the task seed list
+        task_seeded = False
         for ti in range(50):
             task_title = request.form.get(f'tasks[{ti}][title]', '').strip()
             if not task_title:
@@ -304,6 +390,14 @@ def event_add():
             if task_cat and task_cat not in ASSIGNMENT_CATEGORIES:
                 task_cat = None
             db.session.add(EventAssignment(event_id=event.id, title=task_title[:150], category=task_cat))
+            task_seeded = True
+        if event.has_assignments and preset_config and not task_seeded:
+            for task in preset_config.get('tasks', []):
+                db.session.add(EventAssignment(
+                    event_id=event.id,
+                    title=task['title'][:150],
+                    category=task.get('category') or None,
+                ))
 
         if form.cover_image.data and hasattr(form.cover_image.data, 'filename') and form.cover_image.data.filename:
             key = upload_photo(form.cover_image.data, folder='events')
