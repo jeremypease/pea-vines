@@ -10,8 +10,8 @@ from datetime import date
 from app import db
 from app.people_merge import merge_person_records, _person_fk_columns
 from app.models import (
-    User, Person, Family, Event, EventRSVP, Announcement, Poll, Album, Photo,
-    Document, Checklist, StoryPrompt, EventComment, ParentRelationship, GreetingCard,
+    User, Person, Event, EventRSVP, Announcement, Poll, Album, Photo,
+    Document, Checklist, StoryPrompt, EventComment,
 )
 
 

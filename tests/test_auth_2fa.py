@@ -5,7 +5,6 @@ These cover page-load smoke tests for TOTP setup/security pages, and verify
 that OAuth callback endpoints reject malformed tokens gracefully rather than
 crashing — full OAuth flow testing would require mocking external JWKS.
 """
-import pytest
 import json
 
 

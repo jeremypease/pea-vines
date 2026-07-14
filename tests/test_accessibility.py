@@ -3,7 +3,6 @@ Display & accessibility preferences: a per-user larger-text / higher-contrast
 setting that persists and drives <html data-text-size> / data-contrast so the
 whole UI adapts for older family members.
 """
-from app import db
 from app.models import User
 
 
