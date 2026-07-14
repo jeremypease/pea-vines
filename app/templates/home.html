@@ -270,6 +270,7 @@
     {% endif %}
 
     {# Recent photos #}
+    {% if feature_enabled('photos') %}
     {% if recent_photos %}
     <div class="card">
         <div class="card-header">
@@ -290,16 +291,18 @@
         <p style="font-size:13px;color:var(--slate);padding:4px 0;">No photos yet. <a href="/albums" style="color:var(--vine);">Create an album →</a></p>
     </div>
     {% endif %}
+    {% endif %}
 
     {# On this day #}
-    {% if on_this_day or on_this_day_events %}
+    {% set show_on_this_day_photos = on_this_day and feature_enabled('photos') %}
+    {% if show_on_this_day_photos or on_this_day_events %}
     <div class="card">
         <div class="card-header">
             <h3>On this day</h3>
             <span style="font-size:12px;color:var(--slate);">{{ now.strftime('%B %-d') }} in past years</span>
         </div>
         {% if on_this_day_events %}
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:{% if on_this_day %}12px{% else %}0{% endif %};">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:{% if show_on_this_day_photos %}12px{% else %}0{% endif %};">
             {% for e in on_this_day_events %}
             <a href="/events/{{ e.id }}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
                 <i data-lucide="calendar" style="width:14px;height:14px;flex-shrink:0;color:var(--slate);"></i>
@@ -309,7 +312,7 @@
             {% endfor %}
         </div>
         {% endif %}
-        {% if on_this_day %}
+        {% if show_on_this_day_photos %}
         <div class="photo-grid-sm">
             {% for photo in on_this_day %}
             <a href="/albums/{{ photo.album_id }}" title="{{ photo.caption or '' }}">

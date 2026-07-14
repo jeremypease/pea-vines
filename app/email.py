@@ -171,7 +171,7 @@ def send_welcome_email(user, family, dashboard_url):
         <ol>
             <li><strong>Add your first family member</strong> — invite someone or add them yourself from the Members page.</li>
             <li><strong>Build your family tree</strong> — connect parents, children, and spouses.</li>
-            <li><strong>Upload a photo</strong> — start your family album.</li>
+            <li><strong>Create your first event</strong> — plan a reunion, holiday, or get-together.</li>
         </ol>
         <p><a href="{dashboard_url}" style="background:#3D7040;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">Go to your circle</a></p>
         <p style="color:#666;font-size:13px;">Your circle ID is <strong>{family.account_id}</strong> — keep this handy if you ever need to contact support.</p>

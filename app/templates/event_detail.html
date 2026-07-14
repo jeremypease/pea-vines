@@ -256,6 +256,7 @@ details[open] .details-chevron { transform: rotate(180deg); }
     {% endif %}
 
     {# ── PHOTOS ──────────────────────────────────────────────────────── #}
+    {% if feature_enabled('photos') %}
     {% set total_event_photos = event.albums | sum(attribute='photo_count') %}
     {% if event.albums or current_user.person %}
     <div class="card">
@@ -349,6 +350,7 @@ details[open] .details-chevron { transform: rotate(180deg); }
         {% endif %}
     </div>
     {% endif %}
+    {% endif %}{# /photos feature #}
 
     {% include 'event/_comments.html' %}
 
