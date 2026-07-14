@@ -11,7 +11,7 @@ e.g. ENABLED_FEATURES="activity,events,photos,members,chat".
 import os
 
 # Features live in the current product (the MVP cut).
-DEFAULT_FEATURES = {'activity', 'events', 'photos', 'members'}
+DEFAULT_FEATURES = {'activity', 'events', 'members'}
 
 # Every gateable content feature → the URL prefix(es) it owns, so one
 # before_request hook can block the disabled ones. Chrome (home, notifications,

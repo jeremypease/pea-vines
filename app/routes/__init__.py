@@ -334,9 +334,10 @@ def home():
             ('members',  'Add your first family member', url_for('main.members'),         member_count > 1),
             ('profile',  'Complete your profile',        url_for('main.profile_edit'),    bool(me and me.birthday)),
             ('event',    'Create your first event',      url_for('main.events_list'),     event_count > 0),
-            ('photo',    'Upload a photo',               url_for('main.albums'),          len(recent_photos) > 0),
             ('location', 'Add a family location',        url_for('main.admin_locations'), location_count > 0),
         ]
+        if 'photos' in current_app.config['ENABLED_FEATURES']:
+            core.insert(3, ('photo', 'Upload a photo', url_for('main.albums'), len(recent_photos) > 0))
         steps = list(core)
         # Optional suggestion — does not gate the checklist, so it never nags
         # members who aren't adding a spouse/partner.
@@ -360,22 +361,23 @@ def home():
             'label': f'New event: {e.name}', 'url': f'/events/{e.id}', 'icon': 'calendar',
         })
 
-    _photos = Photo.query.filter(
-        Photo.family_id == current_user.active_family_id,
-        Photo.created_at >= _since
-    ).order_by(Photo.created_at.desc()).limit(60).all()
-    _photo_groups = defaultdict(list)
-    for _p in _photos:
-        _photo_groups[(_p.album_id, _p.uploaded_by_id, _p.created_at.date())].append(_p)
-    for (_aid, _, _d), _grp in _photo_groups.items():
-        _latest = max(_grp, key=lambda p: p.created_at)
-        _cnt = len(_grp)
-        _alb = _grp[0].album
-        _activity.append({
-            'type': 'photos', 'ts': _latest.created_at, 'actor': _grp[0].uploaded_by,
-            'label': f'added {_cnt} photo{"s" if _cnt > 1 else ""} to {_alb.name}',
-            'url': f'/albums/{_aid}', 'icon': 'image',
-        })
+    if 'photos' in current_app.config['ENABLED_FEATURES']:
+        _photos = Photo.query.filter(
+            Photo.family_id == current_user.active_family_id,
+            Photo.created_at >= _since
+        ).order_by(Photo.created_at.desc()).limit(60).all()
+        _photo_groups = defaultdict(list)
+        for _p in _photos:
+            _photo_groups[(_p.album_id, _p.uploaded_by_id, _p.created_at.date())].append(_p)
+        for (_aid, _, _d), _grp in _photo_groups.items():
+            _latest = max(_grp, key=lambda p: p.created_at)
+            _cnt = len(_grp)
+            _alb = _grp[0].album
+            _activity.append({
+                'type': 'photos', 'ts': _latest.created_at, 'actor': _grp[0].uploaded_by,
+                'label': f'added {_cnt} photo{"s" if _cnt > 1 else ""} to {_alb.name}',
+                'url': f'/albums/{_aid}', 'icon': 'image',
+            })
 
     for c in EventComment.query.join(Event, EventComment.event_id == Event.id).filter(
         Event.family_id == current_user.active_family_id,
@@ -1142,6 +1144,8 @@ def upload_photos(album_id):
 @login_required
 @requires_plan
 def event_upload_photos(event_id):
+    if 'photos' not in current_app.config['ENABLED_FEATURES']:
+        abort(404)
     event = db.session.get(Event, event_id)
     if not event or event.family_id != current_user.active_family_id:
         return redirect(url_for('main.events_list'))
@@ -1260,6 +1264,10 @@ def photo_untag(photo_id, tag_id):
 @main.route('/members/<int:person_id>/photos')
 @login_required
 def person_photos(person_id):
+    # Part of the photos feature; 404 when it's cut from this build. (Route lives
+    # under /members, so the /albums prefix gate doesn't cover it.)
+    if 'photos' not in current_app.config['ENABLED_FEATURES']:
+        abort(404)
     from ..models import PhotoTag
     person = db.session.get(Person, person_id)
     if not person or person.family_id != current_user.active_family_id:
@@ -2169,18 +2177,20 @@ def search():
         ).order_by(Announcement.created_at.desc()).limit(10).all()
 
         # Photos matched by caption, plus albums matched by name — surfaced as
-        # albums so a click lands on the album the photo lives in.
-        album_hits = Album.query.filter(
-            Album.family_id == fid, Album.name.ilike(like),
-        ).limit(10).all()
-        caption_photos = Photo.query.filter(
-            Photo.family_id == fid, Photo.caption.ilike(like),
-        ).order_by(Photo.created_at.desc()).limit(10).all()
-        seen_albums = {a.id: a for a in album_hits}
-        for p in caption_photos:
-            if p.album_id not in seen_albums and p.album:
-                seen_albums[p.album_id] = p.album
-        results['photos'] = list(seen_albums.values())
+        # albums so a click lands on the album the photo lives in. Skipped when
+        # the photos feature is cut, so search never links to a 404.
+        if 'photos' in current_app.config['ENABLED_FEATURES']:
+            album_hits = Album.query.filter(
+                Album.family_id == fid, Album.name.ilike(like),
+            ).limit(10).all()
+            caption_photos = Photo.query.filter(
+                Photo.family_id == fid, Photo.caption.ilike(like),
+            ).order_by(Photo.created_at.desc()).limit(10).all()
+            seen_albums = {a.id: a for a in album_hits}
+            for p in caption_photos:
+                if p.album_id not in seen_albums and p.album:
+                    seen_albums[p.album_id] = p.album
+            results['photos'] = list(seen_albums.values())
 
         results['documents'] = Document.query.filter(
             Document.family_id == fid,

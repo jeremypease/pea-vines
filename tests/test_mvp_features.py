@@ -9,7 +9,7 @@ from datetime import date, datetime
 from app import db
 from app.models import User, Announcement, Event
 
-MVP = {'activity', 'events', 'photos', 'members'}
+MVP = {'activity', 'events', 'members'}
 
 
 def _mvp(app):
@@ -18,11 +18,11 @@ def _mvp(app):
 
 def test_live_features_reachable(app, auth_client):
     _mvp(app)
-    for path in ('/activity', '/events', '/members', '/albums'):
+    for path in ('/activity', '/events', '/members'):
         assert auth_client.get(path).status_code == 200, path
 
 
-@pytest.mark.parametrize('path', ['/chat', '/polls', '/announcements', '/messages',
+@pytest.mark.parametrize('path', ['/albums', '/chat', '/polls', '/announcements', '/messages',
                                   '/registries', '/stories', '/cards', '/documents', '/timeline'])
 def test_hidden_features_404(app, auth_client, path):
     _mvp(app)
@@ -32,9 +32,9 @@ def test_hidden_features_404(app, auth_client, path):
 def test_nav_shows_only_live_features(app, auth_client):
     _mvp(app)
     html = auth_client.get('/home').data.decode()
-    for live in ('/activity', '/events', '/albums', '/members'):
+    for live in ('/activity', '/events', '/members'):
         assert f'href="{live}"' in html, live
-    for hidden in ('/announcements', '/messages', '/registries'):
+    for hidden in ('/albums', '/announcements', '/messages', '/registries'):
         assert f'href="{hidden}"' not in html, hidden
 
 
@@ -43,6 +43,19 @@ def test_reenabling_a_feature_is_one_config_change(app, auth_client):
     assert auth_client.get('/polls').status_code == 404
     app.config['ENABLED_FEATURES'] = MVP | {'polls'}
     assert auth_client.get('/polls').status_code == 200
+
+
+def test_photos_disabled_leaves_no_album_links(app, auth_client, seeded_event_id):
+    """With photos cut, no page may render a link/form into /albums (which 404s),
+    and the photo write routes are gone."""
+    _mvp(app)  # photos not in the live set
+    for path in ('/home', f'/events/{seeded_event_id}', '/search?q=a'):
+        html = auth_client.get(path).data.decode()
+        assert 'href="/albums' not in html, path
+        assert 'action="/albums' not in html, path
+        assert '/photos/upload' not in html, path
+    # write routes reachable only via the feature are blocked
+    assert auth_client.post(f'/events/{seeded_event_id}/photos/upload').status_code == 404
 
 
 def test_activity_feed_only_shows_live_sources(app, auth_client):
