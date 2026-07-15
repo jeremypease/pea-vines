@@ -60,7 +60,8 @@
     <div class="card" style="padding:20px;">
         <div class="profile-photo" style="{% if is_own_profile and not person.photo_path %}cursor:pointer;{% endif %}">
             {% if person.photo_path %}
-            <img src="{{ photo_url(person.photo_path) }}" alt="{{ person.get_display_name() }}">
+            <img src="{{ photo_url(person.photo_path) }}" alt="{{ person.get_display_name() }}"
+                 id="profilePhotoImg" style="object-position: {{ person.photo_position or 'center' }};">
             {% else %}
             <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;font-weight:700;color:rgba(255,255,255,0.75);font-family:var(--font-display);letter-spacing:-2px;">
                 {{ person.get_display_name()[0].upper() }}{% if person.name.split()|length > 1 %}{{ person.name.split()[-1][0].upper() }}{% endif %}
@@ -77,6 +78,21 @@
                 <input type="file" name="photo" accept="image/*" style="display:none;" data-autosubmit>
             </label>
         </form>
+        {% if person.photo_path %}
+        <div style="text-align:center;margin-bottom:8px;font-size:12px;">
+            <button type="button" id="repositionBtn"
+                    style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;font-family:inherit;">
+                <i data-lucide="move" style="width:12px;height:12px;"></i> Reposition
+            </button>
+            <span id="repositionControls" style="display:none;">
+                <button type="button" id="repositionSave"
+                        style="background:none;border:none;color:var(--vine);cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;">Save</button>
+                <span style="color:var(--hairline-strong);">·</span>
+                <button type="button" id="repositionCancel"
+                        style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;font-family:inherit;">Cancel</button>
+            </span>
+        </div>
+        {% endif %}
         {% endif %}
 
         <div class="profile-display-name">{{ person.get_display_name() }}</div>
@@ -344,4 +360,83 @@
 
 </div>
 </div>
+
+{% if is_own_profile and person.photo_path %}
+<script nonce="{{ g.csp_nonce }}">
+// Drag-to-reposition the profile photo's focal point (object-position),
+// persisted via /profile/photo/position. Functional; visual polish is design's.
+(function () {
+  const img = document.getElementById('profilePhotoImg');
+  const btn = document.getElementById('repositionBtn');
+  const controls = document.getElementById('repositionControls');
+  const saveBtn = document.getElementById('repositionSave');
+  const cancelBtn = document.getElementById('repositionCancel');
+  if (!img || !btn || !controls || !saveBtn || !cancelBtn) return;
+
+  const CSRF = "{{ csrf_token() }}";
+  const URL_SAVE = "{{ url_for('main.profile_photo_position') }}";
+  let active = false, dragging = false;
+  let startX = 0, startY = 0, baseX = 50, baseY = 50;
+  let posX = 50, posY = 50, origX = 50, origY = 50;
+
+  const clamp = v => Math.max(0, Math.min(100, v));
+  function parsePos() {
+    const m = (img.style.objectPosition || '50% 50%').match(/([\d.]+)%\s+([\d.]+)%/);
+    if (m) { posX = parseFloat(m[1]); posY = parseFloat(m[2]); }
+  }
+  function apply() { img.style.objectPosition = posX + '% ' + posY + '%'; }
+
+  function enter() {
+    parsePos(); origX = posX; origY = posY;
+    active = true;
+    btn.style.display = 'none';
+    controls.style.display = 'inline';
+    img.style.cursor = 'move';
+    img.style.touchAction = 'none';
+  }
+  function exit() {
+    active = false; dragging = false;
+    btn.style.display = '';
+    controls.style.display = 'none';
+    img.style.cursor = '';
+    img.style.touchAction = '';
+  }
+
+  btn.addEventListener('click', enter);
+  cancelBtn.addEventListener('click', function () { posX = origX; posY = origY; apply(); exit(); });
+  saveBtn.addEventListener('click', function () {
+    const value = Math.round(posX) + '% ' + Math.round(posY) + '%';
+    fetch(URL_SAVE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ position: value }),
+    }).then(r => r.json()).then(d => { if (d && d.ok) { origX = posX; origY = posY; } exit(); })
+      .catch(exit);
+  });
+
+  img.addEventListener('dragstart', e => e.preventDefault());
+  img.addEventListener('pointerdown', function (e) {
+    if (!active) return;
+    e.preventDefault();
+    dragging = true; startX = e.clientX; startY = e.clientY; baseX = posX; baseY = posY;
+    try { img.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  img.addEventListener('pointermove', function (e) {
+    if (!active || !dragging) return;
+    const rect = img.getBoundingClientRect();
+    // Grab-and-move: dragging down reveals the top (object-position Y decreases).
+    posX = clamp(baseX - (e.clientX - startX) / rect.width * 100);
+    posY = clamp(baseY - (e.clientY - startY) / rect.height * 100);
+    apply();
+  });
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    try { img.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+  img.addEventListener('pointerup', endDrag);
+  img.addEventListener('pointercancel', endDrag);
+})();
+</script>
+{% endif %}
 {% endblock %}

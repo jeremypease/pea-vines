@@ -1983,9 +1983,32 @@ def profile_photo():
         key = upload_photo(file, folder='photos')
         if key:
             person.photo_path = key
+            person.photo_position = '50% 50%'   # reset focal point for the new image
             db.session.commit()
             flash('Profile photo updated.', 'info')
     return redirect(url_for('main.profile'))
+
+
+# "X% Y%" with each 0–100 — strict, because the value is rendered into an inline
+# style (object-position / background-position), so anything looser is a CSS
+# injection vector.
+_PHOTO_POSITION_RE = re.compile(r'^(\d{1,3})% (\d{1,3})%$')
+
+
+@main.route('/profile/photo/position', methods=['POST'])
+@login_required
+def profile_photo_position():
+    person = current_user.person
+    if not person or not person.photo_path:
+        abort(404)
+    data = request.get_json(silent=True) or request.form
+    raw = (data.get('position') or '').strip()
+    m = _PHOTO_POSITION_RE.match(raw)
+    if not m or int(m.group(1)) > 100 or int(m.group(2)) > 100:
+        return jsonify({'ok': False, 'error': 'invalid_position'}), 400
+    person.photo_position = raw
+    db.session.commit()
+    return jsonify({'ok': True, 'position': raw})
 
 
 @main.route('/notifications')
