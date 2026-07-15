@@ -62,6 +62,9 @@
             {% if person.photo_path %}
             <img src="{{ photo_url(person.photo_path) }}" alt="{{ person.get_display_name() }}"
                  id="profilePhotoImg" style="object-position: {{ person.photo_position or 'center' }};">
+            {% elif person.avatar_id %}
+            <img src="{{ url_for('static', filename='assets/avatars/' ~ person.avatar_id ~ '.svg') }}"
+                 alt="{{ person.get_display_name() }}">
             {% else %}
             <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;font-weight:700;color:rgba(255,255,255,0.75);font-family:var(--font-display);letter-spacing:-2px;">
                 {{ person.get_display_name()[0].upper() }}{% if person.name.split()|length > 1 %}{{ person.name.split()[-1][0].upper() }}{% endif %}
@@ -91,6 +94,28 @@
                 <button type="button" id="repositionCancel"
                         style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;font-family:inherit;">Cancel</button>
             </span>
+        </div>
+        {% endif %}
+
+        {% if not person.photo_path %}
+        <div style="text-align:center;margin-bottom:6px;">
+            <button type="button" id="avatarPickerBtn"
+                    style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--vine);cursor:pointer;font-size:12px;font-family:inherit;">
+                <i data-lucide="smile" style="width:12px;height:12px;"></i>
+                {% if person.avatar_id %}Change avatar{% else %}Or pick an avatar{% endif %}
+            </button>
+        </div>
+        <div id="avatarPicker" style="display:none;justify-content:center;flex-wrap:wrap;gap:8px;margin:2px auto 10px;max-width:240px;">
+            {% for aid, label in animal_avatars %}
+            <button type="button" class="avatar-option" data-avatar="{{ aid }}" title="{{ label }}"
+                    style="background:none;padding:0;line-height:0;cursor:pointer;border:2px solid {% if person.avatar_id == aid %}var(--vine){% else %}transparent{% endif %};border-radius:50%;">
+                <img src="{{ url_for('static', filename='assets/avatars/' ~ aid ~ '.svg') }}" alt="{{ label }}" width="44" height="44" style="border-radius:50%;display:block;">
+            </button>
+            {% endfor %}
+            {% if person.avatar_id %}
+            <button type="button" class="avatar-option" data-avatar="" title="Remove avatar"
+                    style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;font-family:inherit;">Remove</button>
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -436,6 +461,32 @@
   }
   img.addEventListener('pointerup', endDrag);
   img.addEventListener('pointercancel', endDrag);
+})();
+</script>
+{% endif %}
+
+{% if is_own_profile and not person.photo_path %}
+<script nonce="{{ g.csp_nonce }}">
+// Generic-avatar picker: toggle the grid, POST the choice, reload to re-render.
+(function () {
+  const btn = document.getElementById('avatarPickerBtn');
+  const grid = document.getElementById('avatarPicker');
+  if (!btn || !grid) return;
+  const CSRF = "{{ csrf_token() }}";
+  const URL_SET = "{{ url_for('main.profile_avatar') }}";
+  btn.addEventListener('click', function () {
+    grid.style.display = grid.style.display === 'flex' ? 'none' : 'flex';
+  });
+  grid.querySelectorAll('.avatar-option').forEach(function (el) {
+    el.addEventListener('click', function () {
+      fetch(URL_SET, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ avatar_id: el.getAttribute('data-avatar') || '' }),
+      }).then(r => r.json()).then(function (d) { if (d && d.ok) window.location.reload(); })
+        .catch(function () {});
+    });
+  });
 })();
 </script>
 {% endif %}

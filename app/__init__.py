@@ -13,6 +13,8 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 import secrets
 import os
 
+from .avatars import ANIMAL_AVATARS
+
 load_dotenv()
 import certifi
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -272,6 +274,7 @@ def create_app(test_config=None):
             'feature_enabled': lambda key: key in app.config.get('ENABLED_FEATURES', set()),
             'a11y_text_size': (current_user.text_size if current_user.is_authenticated else 'normal'),
             'a11y_high_contrast': (current_user.high_contrast if current_user.is_authenticated else False),
+            'animal_avatars': ANIMAL_AVATARS,
         }
 
     @app.template_filter('datetime_format')

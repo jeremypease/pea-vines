@@ -1,0 +1,10 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Koala avatar"><rect width="100" height="100" fill="#E7EBED"/>
+  <circle cx="27" cy="42" r="13" fill="#9AA6AD"/>
+  <circle cx="73" cy="42" r="13" fill="#9AA6AD"/>
+  <circle cx="27" cy="42" r="7" fill="#C7D0D5"/>
+  <circle cx="73" cy="42" r="7" fill="#C7D0D5"/>
+  <circle cx="50" cy="56" r="25" fill="#AEB9BF"/>
+  <circle cx="41" cy="54" r="4" fill="#2E3438"/>
+  <circle cx="59" cy="54" r="4" fill="#2E3438"/>
+  <ellipse cx="50" cy="64" rx="7" ry="9" fill="#4A5257"/>
+</svg>
