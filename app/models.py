@@ -110,6 +110,8 @@ class Person(db.Model):
     address = db.Column(db.String(200))
     photo_path = db.Column(db.String(200))
     photo_position = db.Column(db.String(20), default='50% 30%')
+    # Chosen generic (cartoon-animal) avatar id when no photo is uploaded; see app/avatars.py
+    avatar_id = db.Column(db.String(30))
     notes = db.Column(db.Text)
     pronouns = db.Column(db.String(50))
     in_directory = db.Column(db.Boolean, default=True, nullable=False)
