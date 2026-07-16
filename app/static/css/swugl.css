@@ -16,13 +16,13 @@
      ========================================================= */
 
   /* Greens — leaves and vines */
-  --vine:        #3D7040;   /* primary action, dark headlines */
-  --vine-deep:   #2d5430;   /* hover/pressed on Vine */
-  --pea:         #5b8a52;   /* links, secondary accents */
-  --pea-soft:    #7aaa6e;   /* hover-tints, decorative */
-  --sprout:      #a3b18a;   /* hover wash, illustration fill */
-  --sprout-soft: #cfdcb8;   /* selected row tint */
-  --leaf-mist:   #E8EEDF;   /* green accent pill, active states */
+  --vine:        #2E8D4A;   /* primary action, headlines — fresh brand green */
+  --vine-deep:   #26763E;   /* hover/pressed on Vine */
+  --pea:         #3E9E5C;   /* links, secondary accents */
+  --pea-soft:    #6FBF88;   /* hover-tints, decorative */
+  --sprout:      #87CD9C;   /* brand green — hover wash, illustration fill */
+  --sprout-soft: #B7DEC5;   /* selected row tint */
+  --leaf-mist:   #E6F2EA;   /* green accent pill, active states */
 
   /* Paper — backgrounds */
   --cream:       #F4F4F1;   /* Layer 0 — app canvas, warm light gray */
@@ -45,6 +45,9 @@
   --honey-soft:  #FBEFCD;
   --tomato:      #C44A3D;   /* errors, destructive */
   --tomato-soft: #F4D8D2;
+  --sky:         #4A91F7;   /* brand blue — info, focus, secondary accent */
+  --sky-deep:    #2C6FD6;   /* blue text / hover */
+  --sky-soft:    #E1ECFD;   /* info tint */
 
   /* Semantic — point UI roles at base tokens */
   --bg:               var(--cream);
@@ -72,10 +75,10 @@
   --status-pending:   var(--honey);
   --status-active:    var(--pea);
   --status-error:     var(--tomato);
-  --status-info:      var(--pea);
+  --status-info:      var(--sky);
 
-  /* Focus ring (3px, translucent pea) */
-  --focus-ring:       0 0 0 3px rgba(107, 142, 78, 0.35);
+  /* Focus ring (3px, translucent brand blue) */
+  --focus-ring:       0 0 0 3px rgba(74, 145, 247, 0.35);
 
   /* =========================================================
      TYPE
@@ -503,7 +506,7 @@ body {
   transition: border-color 140ms var(--ease-settle), box-shadow 140ms var(--ease-settle);
 }
 .field input:focus, .field select:focus, .field textarea:focus {
-  outline: none; border-color: var(--vine); box-shadow: var(--focus-ring);
+  outline: none; border-color: var(--sky); box-shadow: var(--focus-ring);
 }
 .field .help { font-size: 12px; color: var(--text-muted); }
 .field.err input, .field.err select { border-color: var(--tomato); }
