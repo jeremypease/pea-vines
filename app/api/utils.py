@@ -44,6 +44,10 @@ def serialize_user(user):
         'person_id': user.person_id,
         'plan': family.plan if family else 'free',
         'has_paid_access': family_has_paid_access(family) if family else False,
+        # The live feature set (same source of truth the web nav uses). The app
+        # builds its tab bar from this so a feature toggled in ENABLED_FEATURES
+        # changes web + app together instead of drifting out of sync.
+        'enabled_features': sorted(current_app.config.get('ENABLED_FEATURES', ())),
     }
 
 
