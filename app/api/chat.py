@@ -6,7 +6,7 @@ from .. import db
 from ..models import ChatMessage, User
 from ..billing import family_has_paid_access
 from . import api
-from .utils import error_response, api_family_id
+from .utils import error_response, api_family_id, requires_feature
 
 
 def _get_user():
@@ -29,6 +29,7 @@ def _serialize(msg, user):
 
 
 @api.route('/chat/messages', methods=['GET'])
+@requires_feature('chat')
 @jwt_required()
 def chat_messages():
     user = _get_user()
@@ -62,6 +63,7 @@ def chat_messages():
 
 
 @api.route('/chat/messages', methods=['POST'])
+@requires_feature('chat')
 @jwt_required()
 def chat_send():
     user = _get_user()
@@ -89,6 +91,7 @@ def chat_send():
 
 
 @api.route('/chat/messages/<int:msg_id>', methods=['PATCH'])
+@requires_feature('chat')
 @jwt_required()
 def chat_edit(msg_id):
     user = _get_user()
@@ -116,6 +119,7 @@ def chat_edit(msg_id):
 
 
 @api.route('/chat/messages/<int:msg_id>', methods=['DELETE'])
+@requires_feature('chat')
 @jwt_required()
 def chat_delete(msg_id):
     user = _get_user()
