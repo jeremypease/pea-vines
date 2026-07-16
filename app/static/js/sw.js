@@ -1,9 +1,9 @@
-const CACHE = 'swugl-v1.0.0';
+const CACHE = 'swugl-v1.1.0';
 
 const PRECACHE = [
   '/offline',
   '/static/css/swugl.css',
-  '/static/assets/swugl-mark.svg',
+  '/static/assets/swugl-mark.png',
   '/static/assets/icon-192.png',
 ];
 
