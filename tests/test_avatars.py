@@ -3,7 +3,7 @@ Generic cartoon-animal avatars (Person.avatar_id): pickable when a member doesn'
 upload a photo. A real photo always takes precedence.
 """
 from app import db
-from app.models import User
+from app.models import User, Person
 
 
 def _me():
@@ -49,6 +49,19 @@ def test_photo_takes_precedence_over_avatar(app, auth_client):
     html = auth_client.get(f'/person/{pid}').data.decode()
     assert 'assets/avatars/owl.svg' not in html       # photo wins everywhere
     assert 'id="profilePhotoImg"' in html
+
+
+def test_default_avatar_is_initials_not_silhouette(app, auth_client):
+    """No photo and no chosen avatar → initials everywhere (the av() macro),
+    consistent with the profile page — not the old gender-silhouette SVGs."""
+    with app.app_context():
+        admin = User.query.filter_by(email='admin@pease-family.com').first()
+        db.session.add(Person(name='Grandpa Pease', family_id=admin.family_id, gender='Male'))
+        db.session.commit()
+    html = auth_client.get('/members').data.decode()
+    for svg in ('avatar-male.svg', 'avatar-female.svg', 'avatar-neutral.svg'):
+        assert svg not in html
+    assert '>GP</div>' in html          # initials rendered in the .av circle
 
 
 def test_every_catalog_avatar_has_an_svg(app):
