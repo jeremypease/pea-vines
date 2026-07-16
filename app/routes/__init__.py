@@ -1646,6 +1646,26 @@ def restore_user(user_id):
     return redirect(url_for('main.admin_users'))
 
 
+@main.route('/admin/member/<int:person_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_member(person_id):
+    """Delete an account-less family member from the tree. Members who have a
+    login account must have their access removed first (there's no undo here)."""
+    person = db.session.get(Person, person_id)
+    if not person or person.family_id != current_user.active_family_id:
+        flash('Member not found.', 'error')
+        return redirect(url_for('main.members'))
+    if person.user:
+        flash('This member has an account — remove their access first, then delete them.', 'error')
+        return redirect(url_for('main.person_detail', person_id=person.id))
+    name = person.get_display_name()
+    from ..account import delete_person
+    delete_person(person, purge=(request.form.get('mode') == 'purge'))
+    flash(f'{name} was removed from the family.', 'info')
+    return redirect(url_for('main.members'))
+
+
 @main.route('/admin/toggle-directory/<int:person_id>', methods=['POST'])
 @login_required
 @admin_required
