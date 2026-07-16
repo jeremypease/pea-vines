@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Swugl{% endblock %}</title>
-    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='assets/apple-touch-icon.png') }}">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3D7040">
+    <meta name="theme-color" content="#2E8D4A">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -30,7 +30,7 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <img src="{{ url_for('static', filename='assets/swugl-mark.svg') }}" alt="Swugl">
+            <img src="{{ url_for('static', filename='assets/swugl-mark.png') }}" alt="Swugl">
         </div>
         {% if current_user.memberships|length > 1 %}
         <div class="pod-switcher">
