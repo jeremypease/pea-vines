@@ -208,6 +208,12 @@
                 </button>
             </form>
             {% endif %}
+            {% if current_user.active_is_admin and not is_own_profile and not person.user %}
+            <button type="button" class="btn btn-ghost btn-sm" data-open-modal="delete-member-modal"
+                    style="width:100%;justify-content:flex-start;color:var(--tomato);">
+                <i data-lucide="trash-2"></i> Delete member
+            </button>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -489,5 +495,40 @@
   });
 })();
 </script>
+{% endif %}
+
+{% if current_user.active_is_admin and not is_own_profile and not person.user %}
+<div id="delete-member-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="width:100%;max-width:460px;">
+        <div class="card-header">
+            <h3>Delete {{ person.get_display_name() }}?</h3>
+            <button class="btn btn-ghost btn-sm" data-close-modal="delete-member-modal"><i data-lucide="x"></i></button>
+        </div>
+        <p style="font-size:14px;color:var(--slate);margin:0 0 16px;line-height:1.55;">
+            This permanently removes <strong>{{ person.get_display_name() }}</strong> and their
+            relationships from your family tree. It can't be undone. Choose what happens to the
+            photos they're tagged in:
+        </p>
+        <form method="POST" action="{{ url_for('main.delete_member', person_id=person.id) }}" style="margin-bottom:10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="mode" value="detach">
+            <button type="submit" class="btn btn-secondary" style="width:100%;justify-content:flex-start;">
+                <i data-lucide="user-minus"></i> Remove from family
+                <span style="color:var(--slate);font-weight:400;margin-left:4px;">— keep shared photos</span>
+            </button>
+        </form>
+        <form method="POST" action="{{ url_for('main.delete_member', person_id=person.id) }}"
+              data-confirm="Delete {{ person.get_display_name() }} and the photos they're tagged in? This can't be undone.">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="mode" value="purge">
+            <button type="submit" class="btn btn-ghost" style="width:100%;justify-content:flex-start;color:var(--tomato);">
+                <i data-lucide="trash-2"></i> Delete member &amp; their photos
+            </button>
+        </form>
+        <div style="text-align:right;margin-top:12px;">
+            <button type="button" class="btn btn-ghost btn-sm" data-close-modal="delete-member-modal">Cancel</button>
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endblock %}

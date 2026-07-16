@@ -71,6 +71,82 @@ def delete_user_account(user):
     return 'deleted'
 
 
+def delete_person(person, purge=False):
+    """Fully remove an account-less family member and clean up every reference,
+    so no foreign key is left dangling.
+
+    purge=False (detach) — drop the person's relationships and the rows that are
+      only about them (tags, RSVPs, story prompts, gift registries, greeting
+      cards to them, …), but KEEP shared family content: photos they're tagged
+      in stay (just untagged), and anything they created/uploaded stays with its
+      authorship cleared.
+    purge=True — additionally delete the media directly attributable to them:
+      the photos they uploaded, the photos they're tagged in, and the documents
+      they uploaded.
+
+    The caller must ensure the person has no user account (account-less only).
+    """
+    from .models import (
+        event_sleeping_assignments, PhotoTag, Photo, EventRSVP, PollVote,
+        CardSignature, AnnouncementReaction, EventComment, EventSurveyResponse,
+        CarpoolOffer, ScheduledMessage, StoryResponse, GiftRegistry,
+        GiftRegistryItem, GreetingCard, Album, Announcement, Poll, Checklist,
+        ChecklistItem, EventAssignment, EventMealItem, EventMeal,
+    )
+    pid = person.id
+    delete_object(person.photo_path)
+
+    # ── Rows that are only about this person → always removed ─────────────────
+    SpouseRelationship.query.filter(
+        db.or_(SpouseRelationship.person1_id == pid, SpouseRelationship.person2_id == pid)
+    ).delete(synchronize_session=False)
+    db.session.execute(
+        event_sleeping_assignments.delete().where(event_sleeping_assignments.c.person_id == pid)
+    )
+    for cls in (EventRSVP, PollVote, CardSignature, AnnouncementReaction,
+                EventComment, EventSurveyResponse, CarpoolOffer):
+        cls.query.filter_by(person_id=pid).delete(synchronize_session=False)
+    ScheduledMessage.query.filter_by(recipient_person_id=pid).delete(synchronize_session=False)
+    for sp in StoryPrompt.query.filter_by(person_id=pid).all():
+        db.session.delete(sp)                     # responses cascade (delete-orphan)
+    for reg in GiftRegistry.query.filter_by(recipient_person_id=pid).all():
+        db.session.delete(reg)                    # items cascade
+    for gc in GreetingCard.query.filter_by(recipient_id=pid).all():
+        db.session.delete(gc)                     # signatures cascade
+
+    # ── Media directly attributable to them ──────────────────────────────────
+    tagged_ids = {t.photo_id for t in PhotoTag.query.filter_by(person_id=pid).all()}
+    if purge:
+        upload_ids = {p.id for p in Photo.query.filter_by(uploaded_by_id=pid).all()}
+        if tagged_ids | upload_ids:
+            for ph in Photo.query.filter(Photo.id.in_(tagged_ids | upload_ids)).all():
+                delete_object(ph.path)
+                delete_object(ph.thumb_path)
+                db.session.delete(ph)             # its remaining tags cascade
+        for doc in Document.query.filter_by(uploader_id=pid).all():
+            delete_object(doc.storage_key)
+            db.session.delete(doc)
+    else:
+        PhotoTag.query.filter_by(person_id=pid).delete(synchronize_session=False)  # untag, keep photo
+
+    # ── Nullable authorship / claims on shared content → cleared (both modes) ─
+    # (In purge, the uploaded photos/docs above are already gone, so those
+    #  updates simply match nothing.)
+    for cls, col in (
+        (Photo, 'uploaded_by_id'), (Album, 'created_by_id'), (Announcement, 'author_id'),
+        (Poll, 'created_by_id'), (Checklist, 'created_by_id'), (Document, 'uploader_id'),
+        (ChecklistItem, 'claimed_by_id'), (EventAssignment, 'claimed_by_id'),
+        (EventMealItem, 'assigned_to_id'), (EventMeal, 'assigned_family_id'),
+        (PhotoTag, 'tagged_by_id'), (StoryResponse, 'answered_by_id'),
+        (GiftRegistryItem, 'claimed_by_person_id'), (GiftRegistry, 'created_by_id'),
+        (GreetingCard, 'created_by_id'),
+    ):
+        cls.query.filter_by(**{col: pid}).update({col: None}, synchronize_session=False)
+
+    db.session.delete(person)                     # parent_relationships cascade
+    db.session.commit()
+
+
 def _delete_family_objects(family):
     """Remove all stored files (R2 or local) belonging to a family."""
     for photo in Photo.query.filter_by(family_id=family.id).all():
