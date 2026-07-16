@@ -4,14 +4,9 @@
 {% elif person.avatar_id %}
 <div class="av av-{{ size }}" style="background-image:url('{{ url_for('static', filename='assets/avatars/' ~ person.avatar_id ~ '.svg') }}');background-size:cover;"></div>
 {% else %}
-  {% if person.gender == 'Female' %}
-    {% set placeholder = url_for('static', filename='assets/avatar-female.svg') %}
-  {% elif person.gender == 'Male' %}
-    {% set placeholder = url_for('static', filename='assets/avatar-male.svg') %}
-  {% else %}
-    {% set placeholder = url_for('static', filename='assets/avatar-neutral.svg') %}
-  {% endif %}
-<div class="av av-{{ size }}" style="background:{{ color }};background-image:url('{{ placeholder }}');background-size:90%;background-position:center bottom;"></div>
+{# No photo and no chosen avatar → initials, consistent with the profile page. #}
+{% set _parts = person.name.split() %}
+<div class="av av-{{ size }}" style="background:{{ color }};color:{{ text_color or 'var(--cream)' }};font-family:var(--font-display);">{{ person.get_display_name()[0].upper() }}{% if _parts|length > 1 %}{{ _parts[-1][0].upper() }}{% endif %}</div>
 {% endif %}
 {% endmacro %}
 
