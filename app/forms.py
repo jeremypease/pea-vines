@@ -147,7 +147,7 @@ class AddPersonForm(FlaskForm):
     email = StringField('Email', validators=[Optional(), Email()])
     phone = StringField('Phone', validators=[Optional()])
     gender = SelectField('Gender', choices=GENDER_CHOICES_DEFAULT)
-    birthday = DateField('Birthday', validators=[])
+    birthday = DateField('Birthday', validators=[Optional()])
     birthplace = StringField('Birthplace', validators=[Optional(), Length(max=100)])
     nickname = StringField('Nickname', validators=[Optional(), Length(max=50)])
     maiden_name = StringField('Maiden Name', validators=[Optional(), Length(max=100)])
