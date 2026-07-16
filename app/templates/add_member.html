@@ -98,6 +98,7 @@
                 <div class="field">
                     {{ form.birthday.label }}
                     {{ form.birthday() }}
+                    {% for error in form.birthday.errors %}<span class="msg">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="field">
                     {{ form.birthplace.label }}
