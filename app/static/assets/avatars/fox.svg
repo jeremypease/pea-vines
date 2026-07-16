@@ -1,0 +1,11 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fox avatar"><rect width="100" height="100" fill="#FCE9DA"/>
+  <path d="M27 44 L20 20 L44 34 Z" fill="#E8843C"/>
+  <path d="M73 44 L80 20 L56 34 Z" fill="#E8843C"/>
+  <path d="M30 40 L26 27 L39 35 Z" fill="#7A3E1D"/>
+  <path d="M70 40 L74 27 L61 35 Z" fill="#7A3E1D"/>
+  <path d="M50 34c18 0 26 14 24 27-2 13-14 20-24 20s-22-7-24-20C24 48 32 34 50 34Z" fill="#EE8F3E"/>
+  <path d="M50 60c10 0 16 6 16 12 0 7-8 11-16 11s-16-4-16-11c0-6 6-12 16-12Z" fill="#FFF7F0"/>
+  <circle cx="39" cy="55" r="4.2" fill="#3A2418"/>
+  <circle cx="61" cy="55" r="4.2" fill="#3A2418"/>
+  <path d="M50 66l-6 6h12z" fill="#3A2418"/>
+</svg>

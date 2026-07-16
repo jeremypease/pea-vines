@@ -2011,6 +2011,26 @@ def profile_photo_position():
     return jsonify({'ok': True, 'position': raw})
 
 
+@main.route('/profile/avatar', methods=['POST'])
+@login_required
+def profile_avatar():
+    """Pick (or clear) a generic cartoon-animal avatar for the current user."""
+    from ..avatars import is_valid_avatar
+    person = current_user.person
+    if not person:
+        abort(404)
+    data = request.get_json(silent=True) or request.form
+    choice = (data.get('avatar_id') or '').strip()
+    if choice == '':
+        person.avatar_id = None
+    elif is_valid_avatar(choice):
+        person.avatar_id = choice
+    else:
+        return jsonify({'ok': False, 'error': 'invalid_avatar'}), 400
+    db.session.commit()
+    return jsonify({'ok': True, 'avatar_id': person.avatar_id})
+
+
 @main.route('/notifications')
 @login_required
 def notifications():
