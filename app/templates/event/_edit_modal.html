@@ -17,9 +17,9 @@
                 <div class="field">{{ event_form.end_date.label }}{{ event_form.end_date() }}</div>
             </div>
             <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
-                <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">{{ event_form.has_meals() }} Meals</label>
+                {% if config.EVENT_EXTRAS %}<label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">{{ event_form.has_meals() }} Meals</label>{% endif %}
                 <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">{{ event_form.has_assignments() }} Assignments</label>
-                <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">{{ event_form.has_sleeping() }} Sleeping</label>
+                {% if config.EVENT_EXTRAS %}<label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">{{ event_form.has_sleeping() }} Sleeping</label>{% endif %}
                 <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;"><input type="checkbox" name="has_carpool" {% if event.has_carpool %}checked{% endif %}> Carpool</label>
             </div>
             <div class="field">
