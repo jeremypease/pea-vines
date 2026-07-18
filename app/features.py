@@ -11,7 +11,9 @@ e.g. ENABLED_FEATURES="activity,events,photos,members,chat".
 import os
 
 # Features live in the current product (the MVP cut).
-DEFAULT_FEATURES = {'activity', 'events', 'members', 'chat'}
+# Photos are enabled but event-scoped in v1 (no standalone albums — see the
+# add_album route + the removed Photos nav item).
+DEFAULT_FEATURES = {'activity', 'events', 'members', 'chat', 'photos'}
 
 # Every gateable content feature → the URL prefix(es) it owns, so one
 # before_request hook can block the disabled ones. Chrome (home, notifications,

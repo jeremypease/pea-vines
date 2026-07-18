@@ -64,10 +64,14 @@
         <h1>Photos</h1>
     </div>
     {% if current_user.active_is_admin or current_user.active_is_delegate %}
-        {% if has_paid_access %}
+        {% if has_paid_access and events %}
         <button class="btn btn-primary" data-open-modal="new-album-modal">
             <i data-lucide="plus"></i> New album
         </button>
+        {% elif has_paid_access %}
+        <a href="{{ url_for('main.events_list') }}" class="btn btn-secondary" title="Photos attach to events in this version">
+            <i data-lucide="calendar" style="width:13px;height:13px;"></i> Add an event to share photos
+        </a>
         {% else %}
         <a href="{{ url_for('billing.billing_page') }}" class="btn btn-secondary">
             <i data-lucide="lock" style="width:13px;height:13px;"></i> New album
@@ -154,10 +158,14 @@
     <div style="font-weight:600;font-size:16px;margin-bottom:6px;">No albums yet</div>
     <div style="color:var(--slate);font-size:14px;margin-bottom:20px;">Create an album to share photos with the family.</div>
     {% if current_user.active_is_admin or current_user.active_is_delegate %}
-        {% if has_paid_access %}
+        {% if has_paid_access and events %}
         <button class="btn btn-primary" data-open-modal="new-album-modal">
             <i data-lucide="plus"></i> Create first album
         </button>
+        {% elif has_paid_access %}
+        <a href="{{ url_for('main.events_list') }}" class="btn btn-secondary">
+            <i data-lucide="calendar" style="width:13px;height:13px;"></i> Add an event to share photos
+        </a>
         {% else %}
         <a href="{{ url_for('billing.billing_page') }}" class="btn btn-secondary">
             <i data-lucide="lock" style="width:13px;height:13px;"></i> Upgrade to create albums
@@ -171,9 +179,9 @@
 
 {% if not albums %}
 {% from "_macros.html" import empty_state %}
-{% if (current_user.active_is_admin or current_user.active_is_delegate) and has_paid_access %}
+{% if (current_user.active_is_admin or current_user.active_is_delegate) and has_paid_access and events %}
 {{ empty_state('image', 'No photos yet',
-   'Start your family album — add a few favorites so everyone can enjoy them.',
+   'Photos live on your events — open an event and add a few favorites so everyone can enjoy them.',
    action_label='New album', action_modal='new-album-modal') }}
 {% else %}
 {{ empty_state('image', 'No photos yet', 'Photos your family shares will appear here.') }}
@@ -202,7 +210,7 @@
                     {{ form.year(placeholder="e.g. 2025") }}
                 </div>
                 <div class="field">
-                    {{ form.event_id.label }}
+                    <label for="event_id">Event</label>
                     {{ form.event_id() }}
                 </div>
             </div>
