@@ -1061,8 +1061,9 @@ def albums():
         .order_by(Album.created_at.desc()).all()
     form = AlbumForm()
     events = Event.query.filter_by(family_id=current_user.active_family_id).order_by(Event.start_date.desc()).all()
-    form.event_id.choices = [(0, '-- None --')] + [(e.id, e.name) for e in events]
-    return render_template('albums_list.html', albums=all_albums, form=form,
+    # v1: photos are event-scoped — an album must belong to an event (no "None").
+    form.event_id.choices = [(e.id, e.name) for e in events]
+    return render_template('albums_list.html', albums=all_albums, form=form, events=events,
                            has_paid_access=family_has_paid_access(current_user.family))
 
 @main.route('/albums/add', methods=['POST'])
@@ -1072,15 +1073,18 @@ def albums():
 def add_album():
     events = Event.query.filter_by(family_id=current_user.active_family_id).all()
     form = AlbumForm()
-    form.event_id.choices = [(0, '-- None --')] + [(e.id, e.name) for e in events]
+    form.event_id.choices = [(e.id, e.name) for e in events]
     if form.validate_on_submit():
+        if not form.event_id.data:
+            flash('Photos live on events in this version — create an event first, then add photos to it.', 'error')
+            return redirect(url_for('main.events_list'))
         album = Album(
             family_id=current_user.active_family_id,
             created_by_id=current_user.person.id if current_user.person else None,
             name=form.name.data.strip(),
             description=form.description.data or None,
             year=form.year.data or None,
-            event_id=form.event_id.data or None,
+            event_id=form.event_id.data,
         )
         db.session.add(album)
         db.session.commit()
