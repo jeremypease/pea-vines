@@ -42,11 +42,14 @@
 - [x] `/billing` page for admins
 - [x] Grace period (7 days) on failed payment before downgrading
 - [x] Stripe Tax enabled on all Checkout sessions
+- [ ] **Competitive research (2026-07):** "paywall resentment" shows up repeatedly in reviews of FamilyWall — its free tier is crippled hard enough that the $45/yr premium feels mandatory, compounding a "dated UI" complaint. Cautionary tale for how the free vs. paid split is framed on the pricing page: the free circle should feel genuinely useful on its own, not like a nag screen. Worth a pass over the current free-tier feature list (15 members, 1 GB photos, no chat/calendar feed/mobile) to check it doesn't read the same way.
 
 ### 1C — Public Landing Page ✅
 - [x] Hero, features, pricing (monthly/annual toggle), footer
 - [x] Privacy Policy and Terms of Service
 - [x] `/` → `/home` if logged in, else landing page
+- [ ] **Competitive research (2026-07):** "fragmented tools" is the #1 complaint in family-organizer reviews — families patch together Evite + SignUpGenius + a spreadsheet because nothing combines RSVP + payments + attendee management. Swugl already does all of this in one pod; the landing page should say so explicitly rather than leaving it implied by the feature grid. (Design/copy — routes through Jeffrey; landing page is currently mid-redesign on `feature/figma-homepage-redesign`, coordinate before adding.)
+- [ ] **Competitive research (2026-07):** "privacy fatigue" with Facebook/social media is driving a new "private family hub" app category — recurring complaints are photos visible beyond the intended audience, use in AI/facial-recognition training, and algorithmic feeds. Newer competitors market themselves explicitly as invite-only / no-algorithm / no-ads. Swugl already is that architecturally but doesn't say it anywhere on the landing page — add "closed, ad-free, no-algorithm" as an explicit trust signal in the UI, not just a backend fact. (Design/copy — same coordination note as above.)
 
 ### 1D — Multi-Pod Membership
 *Do before the user base grows — migrating existing single-family data later is painful.*
@@ -86,6 +89,7 @@ A simple threaded group chat scoped to the family. Not a replacement for iMessag
 - [ ] Notifications: badge on sidebar icon when there are unread messages
 - [ ] Push notifications on mobile (Phase 3 dependency)
 - [ ] Paid tier only
+- [ ] **Competitive research (2026-07):** flat/single-feed group chat is a recurring gap in competitor reviews — people want topic or event-scoped rooms, not one undifferentiated stream. The `thread_id` field above already supports reply-threading; consider whether that's sufficient or whether named topic rooms (e.g. per-event chat, a general room) are worth scoping in before this ships, since retrofitting rooms after messages exist is harder than designing for it now.
 
 ### 2C — Recipes & Gift Ideas
 Structured content types that members can create, browse, and save.
@@ -125,6 +129,11 @@ Many families already have their tree in Ancestry.com, MyHeritage, or FamilySear
 - [ ] Conflict resolution: if a person already exists (matched by name + birth year), prompt to merge or skip
 - [ ] Import log: show what was created, what was skipped, what needs manual review
 - [ ] GEDCOM export as the inverse — lets families take their data with them (also satisfies the data portability / GDPR right-to-portability requirement)
+
+### 2F — Story Prompts: Voice Capture
+Story Prompts (`app/routes/stories.py`) already ships AI-prompted questions with typed answers, self or proxy-recorded, paid tier only.
+
+- [ ] **Competitive research (2026-07):** the emotional pull of "capture family stories before they're lost" is one of the strongest recurring themes in family-app reviews and blogs — everyone cites some version of "three generations and it's gone." Newer competitors differentiate by using guided voice interviews instead of text boxes; a typed answer is a bigger ask than a recorded one, especially for the elderly-usability audience Swugl is already prioritizing (see Accessibility). Audio capture on Story Prompts (record an answer, store as an attachment on `StoryResponse`, optional transcript via AI) is a plausible differentiator worth scoping once Phase 5 AI infra exists.
 
 ---
 
@@ -429,6 +438,17 @@ Swugl's core demographic includes grandparents and older family members. Accessi
 - [ ] Error messages are descriptive and linked to the relevant field
 - [ ] `aria-live` regions for dynamic content updates (chat messages, flash notifications)
 - [ ] Mobile tap targets ≥ 44×44px
+- [ ] **Competitive research (2026-07):** elderly usability (big text, minimal nav, zero learning curve) shows up as a headline feature in competitor marketing, not an afterthought — external validation that this section's premise is correct, not aspirational. In-progress work: `feat/accessibility-display` branch already exists for this.
+
+---
+
+## Reliability
+
+Notification, calendar-sync, and data-loss complaints show up across nearly every family-organizer app's reviews — competitors' bugs are churn drivers for them and a differentiation opportunity for Swugl. Being boring and solid is a real edge, not just an engineering nicety.
+
+- Prefer well-tested, unsurprising implementations over clever ones for anything touching notifications, calendar feeds, or data persistence.
+- Every notification-sending path goes through the central `notify()` helper (see Phase 2A) — no ad-hoc sends that can silently fail.
+- The iCal feed (Phase 3A) and calendar sync are exactly the kind of feature that erodes trust quietly if it drifts — needs explicit test coverage before it ships, not just a manual check.
 
 ---
 
