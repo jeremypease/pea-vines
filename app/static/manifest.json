@@ -4,8 +4,8 @@
   "description": "Your private family hub",
   "start_url": "/home",
   "display": "standalone",
-  "background_color": "#FAFAF7",
-  "theme_color": "#2E8D4A",
+  "background_color": "#F5FBF8",
+  "theme_color": "#437E5C",
   "orientation": "portrait-primary",
   "icons": [
     {
