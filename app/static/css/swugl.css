@@ -2,52 +2,86 @@
    Peavines Design System — colors_and_type.css
    Single source of truth for color, type, spacing, radii, and shadows.
    Import once, then reference variables (never hardcode hex/px).
+
+   Color/type tokens synced 2026-08 from Jeffrey's published Figma
+   "swugl Design System" (Foundations page). Figma publishes single
+   role values (primary/secondary/background/foreground/muted/warning/
+   error/info) with no tint/shade ramp and no button-on-color spec, so
+   the --fig-* block below holds those raw values verbatim, and the
+   named roles beneath it map each to the token where it fits — using
+   color-mix() to derive tints/shades where Figma didn't publish one.
+   One deliberate deviation: Figma's raw --primary (#6fcf97) is a pastel
+   that fails WCAG contrast (~1.9:1) against the white/cream text used
+   on 28 solid --vine buttons site-wide, so --vine is a darkened,
+   same-hue derivative rather than a literal passthrough; the literal
+   pastel value lives on --sprout (wash/illustration fill, never paired
+   with light text). --berry (celebrations) has no Figma equivalent and
+   is unchanged. Heading weight/style (h1/h2/h3 below) is also inferred:
+   Figma's metadata gave font family per specimen but not weight or
+   style, so the old italic-serif treatment (Spectral-specific) was
+   dropped for plain bold/semibold, standard for a sans display pairing
+   — worth a look from Jeffrey rather than treated as exact spec. Shadow
+   tokens, the 10-step brand ramp, and the Ant Design icon swap are out
+   of scope here — see docs/design-tokens-figma.md.
    ===================================================================== */
 
 /* ---- Fonts (Google Fonts) ---------------------------------------------
    In production, replace with self-hosted woff2 in /fonts/.
    Substitution is documented in README.md → Caveats.
 */
-@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
 
 :root {
   /* =========================================================
      COLORS
      ========================================================= */
 
+  /* Raw Figma Foundations values (2026-08 publish) — reference only,
+     don't consume directly in component CSS, use the named roles below. */
+  --fig-background:       #f5fbf8;
+  --fig-foreground:       #0d1a13;
+  --fig-primary:          #6fcf97;
+  --fig-secondary:        #2693ff;
+  --fig-muted:            #edf7f2;
+  --fig-muted-foreground: #5a7268;
+  --fig-border:           rgba(13, 60, 35, 0.1);
+  --fig-warning:          #f59e0b;
+  --fig-error:            #e53e3e;
+  --fig-info:             #2693ff;
+
   /* Greens — leaves and vines */
-  --vine:        #2E8D4A;   /* primary action, headlines — fresh brand green */
-  --vine-deep:   #26763E;   /* hover/pressed on Vine */
-  --pea:         #3E9E5C;   /* links, secondary accents */
-  --pea-soft:    #6FBF88;   /* hover-tints, decorative */
-  --sprout:      #87CD9C;   /* brand green — hover wash, illustration fill */
-  --sprout-soft: #B7DEC5;   /* selected row tint */
-  --leaf-mist:   #E6F2EA;   /* green accent pill, active states */
+  --vine:        color-mix(in srgb, var(--fig-primary) 55%, var(--fig-foreground)); /* primary action, headlines — WCAG-safe darkened Figma primary */
+  --vine-deep:   color-mix(in srgb, var(--fig-primary) 40%, var(--fig-foreground)); /* hover/pressed on Vine */
+  --pea:         var(--fig-secondary);   /* links, secondary accents */
+  --pea-soft:    color-mix(in srgb, var(--fig-secondary) 55%, white); /* hover-tints, decorative */
+  --sprout:      var(--fig-primary);     /* brand green — hover wash, illustration fill (literal Figma primary) */
+  --sprout-soft: color-mix(in srgb, var(--fig-primary) 30%, white); /* selected row tint */
+  --leaf-mist:   var(--fig-muted);       /* green accent pill, active states */
 
   /* Paper — backgrounds */
-  --cream:       #F4F4F1;   /* Layer 0 — app canvas, warm light gray */
-  --cream-warm:  #FBFAF6;   /* Layer 1 — sidebar, secondary panels */
-  --paper:       #FFFFFF;   /* Layer 2 — cards, modals, lifts forward */
+  --cream:       var(--fig-background);  /* Layer 0 — app canvas */
+  --cream-warm:  color-mix(in srgb, var(--fig-background) 50%, white); /* Layer 1 — sidebar, secondary panels */
+  --paper:       #FFFFFF;   /* Layer 2 — cards, modals, lifts forward (Figma doesn't publish a separate card tier) */
 
   /* Inks — text */
-  --ink:         #0F170C;   /* headings + body — near-black with olive cast */
-  --ink-soft:    #1C2418;   /* secondary text — dark olive */
-  --slate:       #6E7567;   /* muted, captions — warm gray */
-  --slate-soft:  #9EA697;   /* placeholder, disabled — warm gray */
-  --hairline:    #EBEAE4;   /* light dividers, row separators */
-  --hairline-mid: #E2E1DC;  /* card borders, sidebar separator */
-  --hairline-strong: #D6D5CE; /* input borders — darker warm gray */
+  --ink:         var(--fig-foreground);  /* headings + body */
+  --ink-soft:    color-mix(in srgb, var(--fig-foreground) 85%, white); /* secondary text */
+  --slate:       var(--fig-muted-foreground); /* muted, captions */
+  --slate-soft:  color-mix(in srgb, var(--fig-muted-foreground) 55%, white); /* placeholder, disabled */
+  --hairline:    var(--fig-border);      /* light dividers, row separators */
+  --hairline-mid: rgba(13, 60, 35, 0.16); /* card borders, sidebar separator */
+  --hairline-strong: rgba(13, 60, 35, 0.28); /* input borders */
 
   /* Accents — used sparingly */
-  --berry:       #B5446E;   /* birthdays, celebrations */
+  --berry:       #B5446E;   /* birthdays, celebrations — no Figma equivalent published, unchanged */
   --berry-soft:  #F1D6E0;   /* berry tint */
-  --honey:       #E8B85A;   /* pending / awaiting */
-  --honey-soft:  #FBEFCD;
-  --tomato:      #C44A3D;   /* errors, destructive */
-  --tomato-soft: #F4D8D2;
-  --sky:         #4A91F7;   /* brand blue — info, focus, secondary accent */
-  --sky-deep:    #2C6FD6;   /* blue text / hover */
-  --sky-soft:    #E1ECFD;   /* info tint */
+  --honey:       var(--fig-warning);     /* pending / awaiting */
+  --honey-soft:  color-mix(in srgb, var(--fig-warning) 22%, white);
+  --tomato:      var(--fig-error);       /* errors, destructive */
+  --tomato-soft: color-mix(in srgb, var(--fig-error) 18%, white);
+  --sky:         var(--fig-info);        /* brand blue — info, focus, secondary accent */
+  --sky-deep:    color-mix(in srgb, var(--fig-info) 75%, black); /* blue text / hover */
+  --sky-soft:    color-mix(in srgb, var(--fig-info) 14%, white); /* info tint */
 
   /* Semantic — point UI roles at base tokens */
   --bg:               var(--cream);
@@ -77,14 +111,14 @@
   --status-error:     var(--tomato);
   --status-info:      var(--sky);
 
-  /* Focus ring (3px, translucent brand blue) */
-  --focus-ring:       0 0 0 3px rgba(74, 145, 247, 0.35);
+  /* Focus ring (3px, translucent brand blue — matches --fig-info) */
+  --focus-ring:       0 0 0 3px rgba(38, 147, 255, 0.35);
 
   /* =========================================================
      TYPE
      ========================================================= */
-  --font-display: 'Spectral', 'Iowan Old Style', Georgia, serif;
-  --font-body:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Nunito', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Sizes / line-heights / weights — base values */
@@ -116,13 +150,13 @@
   --s-9: 96px;
 
   /* =========================================================
-     RADII
+     RADII (Figma Foundations: sm/md/lg/xl/full)
      ========================================================= */
-  --r-s:    6px;    /* inputs */
-  --r-m:    12px;   /* buttons, badges */
-  --r-l:    18px;   /* cards */
-  --r-xl:   28px;   /* hero panels */
-  --r-pill: 999px;  /* avatars, chips */
+  --r-s:    4px;    /* inputs */
+  --r-m:    8px;    /* buttons, badges */
+  --r-l:    12px;   /* cards */
+  --r-xl:   16px;   /* hero panels */
+  --r-pill: 9999px; /* avatars, chips */
 
   /* =========================================================
      SHADOWS
@@ -175,8 +209,7 @@ h1, .h1 {
   font-family: var(--font-display);
   font-size: var(--fs-display-l);
   line-height: var(--lh-display-l);
-  font-weight: 300;
-  font-style: italic;
+  font-weight: 700;
   color: var(--text);
   letter-spacing: -0.008em;
   margin: 0;
@@ -186,7 +219,7 @@ h2, .h2 {
   font-family: var(--font-display);
   font-size: var(--fs-display-m);
   line-height: var(--lh-display-m);
-  font-weight: 300;
+  font-weight: 600;
   color: var(--text);
   letter-spacing: -0.005em;
   margin: 0;
@@ -196,8 +229,7 @@ h3, .h3 {
   font-family: var(--font-display);
   font-size: var(--fs-title);
   line-height: var(--lh-title);
-  font-weight: 300;
-  font-style: italic;
+  font-weight: 600;
   color: var(--text);
   margin: 0;
 }
@@ -230,7 +262,7 @@ a {
   text-decoration-line: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  text-decoration-color: rgba(63, 90, 48, 0.32);
+  text-decoration-color: color-mix(in srgb, var(--vine) 65%, transparent);
   transition: color var(--dur-fast) var(--ease-settle),
               text-decoration-color var(--dur-fast) var(--ease-settle);
 }
