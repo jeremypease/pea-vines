@@ -125,10 +125,6 @@
                 <i data-lucide="book-heart"></i> Stories
             </a>
             {% endif %}
-            <a href="/notifications" {% if request.path == '/notifications' %}class="active"{% endif %} id="notif-bell" style="position:relative;" data-action="toggle-notif">
-                <i data-lucide="bell"></i> Notifications
-                <span id="notif-badge" style="position:absolute;top:6px;right:10px;background:var(--vine);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 4px;line-height:1;display:{% if unread_notification_count %}flex{% else %}none{% endif %};">{{ unread_notification_count if unread_notification_count < 100 else '99+' }}</span>
-            </a>
             <a href="/profile" {% if request.path == '/profile' %}class="active"{% endif %}>
                 <i data-lucide="user"></i> My Profile
             </a>
@@ -181,6 +177,12 @@
                        value="{{ request.args.get('q', '') }}"
                        autocomplete="off" style="background:none;border:none;outline:none;font-size:14px;color:inherit;width:100%;">
             </form>
+            <div class="topbar-actions">
+                <a href="/notifications" id="notif-bell" class="topbar-icon-btn{% if request.path == '/notifications' %} active{% endif %}" data-action="toggle-notif" aria-label="Notifications" title="Notifications">
+                    <i data-lucide="bell"></i>
+                    <span id="notif-badge" class="topbar-badge" style="display:{% if unread_notification_count %}flex{% else %}none{% endif %};">{{ unread_notification_count if unread_notification_count < 100 else '99+' }}</span>
+                </a>
+            </div>
         </header>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
