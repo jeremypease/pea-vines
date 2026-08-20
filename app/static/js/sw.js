@@ -1,4 +1,4 @@
-const CACHE = 'swugl-v1.2.0';
+const CACHE = 'swugl-v1.3.0';
 
 const PRECACHE = [
   '/offline',
