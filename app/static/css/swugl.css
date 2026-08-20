@@ -447,7 +447,7 @@ body {
   gap: 16px;
   padding: 14px 40px;
   border-bottom: 1px solid var(--hairline-mid);
-  background: rgba(244,244,241,0.92);
+  background: color-mix(in srgb, var(--cream) 92%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: sticky;
@@ -466,6 +466,41 @@ body {
 }
 .search svg { width: 16px; height: 16px; }
 .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.topbar-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--r-s);
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-decoration: none;
+}
+.topbar-icon-btn:hover { background: var(--leaf-mist); color: var(--vine-deep); }
+.topbar-icon-btn.active { background: var(--leaf-mist); color: var(--vine); }
+.topbar-icon-btn svg { width: 20px; height: 20px; stroke-width: 1.75; }
+.topbar-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--vine);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
 
 /* Page header ------------------------------------------------ */
 .page-head {
